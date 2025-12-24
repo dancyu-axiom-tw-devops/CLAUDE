@@ -1,0 +1,130 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-admin
+  namespace: waas2-prod
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  selector:
+    matchLabels:
+      app: service-admin
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: service-admin
+    spec:
+      restartPolicy: Always
+      nodeSelector:
+        role: apps
+      automountServiceAccountToken: false
+      imagePullSecrets:
+      - name: gcp-pull-secret
+      containers:
+      - name: service-admin
+        image: asia-east2-docker.pkg.dev/uu-prod/waas-prod/service-waas-admin-rel
+        imagePullPolicy: "Always"
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+        command:
+#        - sh
+#        - -c
+#        - |
+#          tail -f /etc/hosts
+        ports:
+        - containerPort: 9005
+          name: service-api
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "400m"
+            memory: "512Mi"
+        livenessProbe:
+          tcpSocket:
+            port: 9005
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          tcpSocket:
+            port: 9005
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: false
+          allowPrivilegeEscalation: false
+          privileged: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - name: timezone
+          mountPath: /etc/localtime
+        - name: log
+          mountPath: /9duu/service-admin/logs/
+          subPathExpr: service-admin/$(POD_NAME)
+        - name: bootstrap-yml
+          mountPath: /9duu/service-admin/config/bootstrap.yml
+          subPath: bootstrap.yml
+        - name: service-admin-default-conf
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+        - name: log
+          mountPath: /var/log/nginx
+          subPath: service-admin-nginx
+        - name: nginx-run
+          mountPath: /run
+      volumes:
+      - name: timezone
+        hostPath:
+          path: /etc/localtime
+      - name: bootstrap-yml
+        configMap:
+          name: service-admin-bootstrap.yml
+          defaultMode: 0666
+      - name: service-admin-default-conf
+        configMap:
+          name: service-admin-default-conf
+          defaultMode: 0666
+      - name: nginx-cache
+        emptyDir: {}
+      - name: nginx-run
+        emptyDir: {}
+      - name: log
+        persistentVolumeClaim:
+          claimName: waas2-tenant-prod-log-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: waas2-prod
+  name: service-admin-svc
+  labels:
+    app: service-admin
+spec:
+  type: ClusterIP
+  selector:
+    app: service-admin
+  ports:
+  - name: "service-api"
+    port: 9005
+    targetPort: 9005
+---

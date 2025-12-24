@@ -1,0 +1,12 @@
+# Waas2 Release Example
+# Date: 2025-12-23
+
+Backend
+service-search-rel#6
+service-exchange-rel#8
+service-tron-rel#70
+service-eth-rel#1
+service-user-rel#1
+
+Frontend
+service-admin-rel#1

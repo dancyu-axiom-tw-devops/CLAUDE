@@ -1,0 +1,43 @@
+# Credentials and Secrets
+credentials/
+*.json
+*.key
+*.pem
+*-credentials.yml
+*-secrets.yml
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.pytest_cache/
+
+# Node
+node_modules/
+npm-debug.log
+
+# Build outputs
+dist/
+build/
+*.egg-info/

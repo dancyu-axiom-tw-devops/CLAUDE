@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-tron
+  namespace: waas2-prod
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  selector:
+    matchLabels:
+      app: service-tron
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: service-tron
+      annotations:
+        reloader.stakater.com/auto: "true"
+        ack.aliyun.com/rds_id: rm-3ns3f62rw71yg26aa
+        ack.aliyun.com/white_list_name: rds_whitelist
+    spec:
+      restartPolicy: Always
+      nodeSelector:
+        role: apps
+      automountServiceAccountToken: false
+#      initContainers:
+#      - name: fix-permissions
+#        image:asia-east2-docker.pkg.dev/uu-prod/waas-prod/busybox
+#        command: ["sh", "-c", "chown -R 1000:1000 /9duu/service-tron/logs"]
+#        volumeMounts:
+#        - name: log
+#          mountPath: /9duu/service-tron/logs
+#        securityContext:
+#          runAsUser: 0
+      imagePullSecrets:
+      - name: gcp-pull-secret
+      containers:
+      - name: service-tron
+        image: asia-east2-docker.pkg.dev/uu-prod/waas-prod/service-tron-v2-rel
+        imagePullPolicy: "Always"
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+#        command:
+#        - sh
+#        - -c
+#        - |
+#          tail -f /etc/hosts
+        ports:
+        - containerPort: 9104
+          name: service-tron
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "800Mi"
+          limits:
+            cpu: "600m"
+            memory: "1.2Gi"
+#        livenessProbe:
+#          tcpSocket:
+#            port: 9104
+#          initialDelaySeconds: 5
+#          periodSeconds: 5
+#          timeoutSeconds: 10
+#          failureThreshold: 3
+#          successThreshold: 1
+#        readinessProbe:
+#          tcpSocket:
+#            port: 9104
+#          initialDelaySeconds: 5
+#          periodSeconds: 5
+#          timeoutSeconds: 10
+#          failureThreshold: 3
+#          successThreshold: 1
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: false
+          allowPrivilegeEscalation: false
+          privileged: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - name: timezone
+          mountPath: /etc/localtime
+        - name: log
+          mountPath: /9duu/service-tron/logs/
+          subPathExpr: service-tron/$(POD_NAME)
+        - name: bootstrap-yml
+          mountPath:  /9duu/service-tron/config/bootstrap.yml
+          subPath: bootstrap.yml
+        - name: decryptor
+          mountPath: /9duu/libveryday.so
+          subPath: c-shared-so/libveryday.so
+      volumes:
+      - name: timezone
+        hostPath:
+          path: /etc/localtime
+      - name:  bootstrap-yml
+        configMap:
+          name: service-tron-bootstrap.yml
+          defaultMode: 0666
+      - name: decryptor
+        persistentVolumeClaim:
+          claimName: waas2-tenant-prod-dcpt-pvc
+      - name: log
+        persistentVolumeClaim:
+          claimName: waas2-tenant-prod-log-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: waas2-prod
+  name: service-tron-svc
+  labels:
+    app: service-tron
+spec:
+  type: ClusterIP
+  selector:
+    app: service-tron
+  ports:
+  - name: "service-tron"
+    port: 9104
+    targetPort: 9104

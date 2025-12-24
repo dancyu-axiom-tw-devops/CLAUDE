@@ -1,0 +1,24 @@
+# Waas2 Production Current Versions
+# Date: 2025-12-23
+# Repo: /Users/user/Waas2-project/gitlab.axiom-infra.com/waas2-tenant-k8s-deploy
+
+## Backend Services
+
+service-search-rel:         60
+service-exchange-rel:       75
+service-tron-v2-rel:        70
+service-eth-rel:            28
+service-user-rel:           72
+
+## Frontend Services
+
+service-waas-admin-rel:     82
+
+## Upgrade Plan
+
+service-search-rel:         60 → 6
+service-exchange-rel:       75 → 8
+service-tron-v2-rel:        70 → service-tron-rel:4  (IMAGE NAME CHANGED!)
+service-eth-rel:            28 → 2
+service-user-rel:           72 → 1
+service-waas-admin-rel:     82 → 1

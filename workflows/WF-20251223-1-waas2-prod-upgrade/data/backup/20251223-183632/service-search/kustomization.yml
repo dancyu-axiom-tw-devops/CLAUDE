@@ -1,0 +1,31 @@
+# namePrefix: dev-
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: waas2-prod
+
+images:
+- name: asia-east2-docker.pkg.dev/uu-prod/waas-prod/service-search-rel
+  newTag: '60'
+- name: asia-east2-docker.pkg.dev/uu-prod/waas-prod/busybox
+  newTag: '1.37.0'
+
+labels:
+  - pairs:
+      env: prod
+    includeTemplates: true
+
+resources:
+  - service-search.yml
+  - service-search-np.yml
+
+## // ------------------------------------------------------------------- // ##
+## * env * ##
+configMapGenerator:
+- name: service-search-bootstrap.yml
+  files:
+  - env/bootstrap.yml
+  namespace: waas2-prod
+  options:
+    disableNameSuffixHash: true
+## // ------------------------------------------------------------------- // ##

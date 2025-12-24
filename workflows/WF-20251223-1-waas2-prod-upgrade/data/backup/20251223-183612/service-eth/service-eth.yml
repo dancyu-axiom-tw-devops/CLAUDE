@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-eth
+  namespace: waas2-prod
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  selector:
+    matchLabels:
+      app: service-eth
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: service-eth
+      annotations:
+        reloader.stakater.com/auto: "true"
+        ack.aliyun.com/rds_id: rm-3ns3f62rw71yg26aa
+        ack.aliyun.com/white_list_name: rds_whitelist
+    spec:
+      restartPolicy: Always
+      nodeSelector:
+        role: apps
+      automountServiceAccountToken: false
+#      initContainers:
+#      - name: fix-permissions
+#        image:asia-east2-docker.pkg.dev/uu-prod/waas-prod/busybox
+#        command: ["sh", "-c", "chown -R 1000:1000 /9duu/service-eth/logs"]
+#        volumeMounts:
+#        - name: log
+#          mountPath: /9duu/service-eth/logs
+#        securityContext:
+#          runAsUser: 0
+      imagePullSecrets:
+      - name: gcp-pull-secret
+      containers:
+      - name: service-eth
+        image: asia-east2-docker.pkg.dev/uu-prod/waas-prod/service-eth-rel
+        imagePullPolicy: "Always"
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+#        command:
+#        - sh
+#        - -c
+#        - |
+#          tail -f /etc/hosts
+        ports:
+        - containerPort: 8020
+          name: service-api
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "400m"
+            memory: "8Gi"
+        livenessProbe:
+          tcpSocket:
+            port: 8020
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+          successThreshold: 1
+        readinessProbe:
+          tcpSocket:
+            port: 8020
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 5
+          successThreshold: 1
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: false
+          allowPrivilegeEscalation: false
+          privileged: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - name: timezone
+          mountPath: /etc/localtime
+        - name: bootstrap-yml
+          mountPath:  /9duu/service-eth/config/bootstrap.yml
+          subPath: bootstrap.yml
+        - name: log
+          mountPath: /9duu/service-eth/logs/
+          subPathExpr: service-eth/$(POD_NAME)
+        - name: decryptor
+          mountPath: /9duu/libveryday.so
+          subPath: c-shared-so/libveryday.so
+      volumes:
+      - name: timezone
+        hostPath:
+          path: /etc/localtime
+      - name:  bootstrap-yml
+        configMap:
+          name: service-eth-bootstrap.yml
+          defaultMode: 0666
+      - name: decryptor
+        persistentVolumeClaim:
+          claimName: waas2-tenant-prod-dcpt-pvc
+      - name: log
+        persistentVolumeClaim:
+          claimName: waas2-tenant-prod-log-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: waas2-prod
+  name: service-eth-svc
+  labels:
+    app: service-eth
+spec:
+  type: ClusterIP
+  selector:
+    app: service-eth
+  ports:
+  - name: "service-api"
+    port: 8020
+    targetPort: 8020

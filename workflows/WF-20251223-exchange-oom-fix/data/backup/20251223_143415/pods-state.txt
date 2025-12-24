@@ -1,0 +1,3 @@
+NAME                                READY   STATUS    RESTARTS   AGE     IP              NODE                               NOMINATED NODE   READINESS GATES
+exchange-service-7846d4765c-mfh8b   1/1     Running   0          4d19h   10.176.19.183   forex-prod-service-10.176.19.174   <none>           <none>
+exchange-service-7846d4765c-xjpjr   1/1     Running   0          4d19h   10.176.3.199    forex-prod-service-10.176.3.192    <none>           <none>

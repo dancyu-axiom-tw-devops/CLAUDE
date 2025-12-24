@@ -1,0 +1,285 @@
+# PromQL Query Templates for Exchange Service Health Check
+# Variables are replaced at runtime:
+#   {namespace}, {pod_pattern}, {container}, {lookback}
+
+# Memory queries
+memory:
+  # Current memory usage for all pods
+  current_usage: |
+    container_memory_working_set_bytes{
+      namespace="{namespace}",
+      pod=~"{pod_pattern}",
+      container="{container}"
+    }
+
+  # Memory usage over time (for trend analysis)
+  usage_over_time: |
+    container_memory_working_set_bytes{
+      namespace="{namespace}",
+      pod=~"{pod_pattern}",
+      container="{container}"
+    }[{lookback}:{step}]
+
+  # Average memory usage
+  average_usage: |
+    avg_over_time(
+      container_memory_working_set_bytes{
+        namespace="{namespace}",
+        pod=~"{pod_pattern}",
+        container="{container}"
+      }[{lookback}]
+    )
+
+  # Maximum memory usage
+  max_usage: |
+    max_over_time(
+      container_memory_working_set_bytes{
+        namespace="{namespace}",
+        pod=~"{pod_pattern}",
+        container="{container}"
+      }[{lookback}]
+    )
+
+  # Minimum memory usage
+  min_usage: |
+    min_over_time(
+      container_memory_working_set bytes{
+        namespace="{namespace}",
+        pod=~"{pod_pattern}",
+        container="{container}"
+      }[{lookback}]
+    )
+
+  # Memory usage percentile (requires quantile_over_time)
+  p95_usage: |
+    quantile_over_time(0.95,
+      container_memory_working_set_bytes{
+        namespace="{namespace}",
+        pod=~"{pod_pattern}",
+        container="{container}"
+      }[{lookback}]
+    )
+
+  p99_usage: |
+    quantile_over_time(0.99,
+      container_memory_working_set_bytes{
+        namespace="{namespace}",
+        pod=~"{pod_pattern}",
+        container="{container}"
+      }[{lookback}]
+    )
+
+# CPU queries
+cpu:
+  # Current CPU usage rate (cores)
+  current_usage: |
+    rate(
+      container_cpu_usage_seconds_total{
+        namespace="{namespace}",
+        pod=~"{pod_pattern}",
+        container="{container}"
+      }[5m]
+    )
+
+  # Average CPU usage
+  average_usage: |
+    avg_over_time(
+      rate(
+        container_cpu_usage_seconds_total{
+          namespace="{namespace}",
+          pod=~"{pod_pattern}",
+          container="{container}"
+        }[5m]
+      )[{lookback}:5m]
+    )
+
+  # Maximum CPU usage
+  max_usage: |
+    max_over_time(
+      rate(
+        container_cpu_usage_seconds_total{
+          namespace="{namespace}",
+          pod=~"{pod_pattern}",
+          container="{container}"
+        }[5m]
+      )[{lookback}:5m]
+    )
+
+  # CPU usage percentiles
+  p95_usage: |
+    quantile_over_time(0.95,
+      rate(
+        container_cpu_usage_seconds_total{
+          namespace="{namespace}",
+          pod=~"{pod_pattern}",
+          container="{container}"
+        }[5m]
+      )[{lookback}:5m]
+    )
+
+# HPA queries
+hpa:
+  # Current replicas
+  current_replicas: |
+    kube_horizontalpodautoscaler_status_current_replicas{
+      namespace="{namespace}",
+      horizontalpodautoscaler="{hpa_name}"
+    }
+
+  # Desired replicas
+  desired_replicas: |
+    kube_horizontalpodautoscaler_status_desired_replicas{
+      namespace="{namespace}",
+      horizontalpodautoscaler="{hpa_name}"
+    }
+
+  # Min replicas (spec)
+  min_replicas: |
+    kube_horizontalpodautoscaler_spec_min_replicas{
+      namespace="{namespace}",
+      horizontalpodautoscaler="{hpa_name}"
+    }
+
+  # Max replicas (spec)
+  max_replicas: |
+    kube_horizontalpodautoscaler_spec_max_replicas{
+      namespace="{namespace}",
+      horizontalpodautoscaler="{hpa_name}"
+    }
+
+  # Replica changes over time
+  replica_history: |
+    kube_horizontalpodautoscaler_status_current_replicas{
+      namespace="{namespace}",
+      horizontalpodautoscaler="{hpa_name}"
+    }[{lookback}:{step}]
+
+# Pod status queries
+pods:
+  # Running pods count
+  running_count: |
+    count(
+      kube_pod_status_phase{
+        namespace="{namespace}",
+        pod=~"{pod_pattern}",
+        phase="Running"
+      }
+    )
+
+  # Total restarts
+  restart_count: |
+    sum(
+      kube_pod_container_status_restarts_total{
+        namespace="{namespace}",
+        pod=~"{pod_pattern}",
+        container="{container}"
+      }
+    )
+
+  # Restart rate
+  restart_rate: |
+    sum(
+      rate(
+        kube_pod_container_status_restarts_total{
+          namespace="{namespace}",
+          pod=~"{pod_pattern}",
+          container="{container}"
+        }[{lookback}]
+      )
+    )
+
+  # OOMKilled count (from kube-state-metrics if available)
+  oom_count: |
+    sum(
+      increase(
+        kube_pod_container_status_terminated_reason{
+          namespace="{namespace}",
+          pod=~"{pod_pattern}",
+          container="{container}",
+          reason="OOMKilled"
+        }[{lookback}]
+      )
+    )
+
+  # Container ready status
+  ready_status: |
+    kube_pod_container_status_ready{
+      namespace="{namespace}",
+      pod=~"{pod_pattern}",
+      container="{container}"
+    }
+
+# Deployment queries
+deployment:
+  # Desired replicas (from deployment spec)
+  spec_replicas: |
+    kube_deployment_spec_replicas{
+      namespace="{namespace}",
+      deployment="{deployment_name}"
+    }
+
+  # Available replicas
+  available_replicas: |
+    kube_deployment_status_replicas_available{
+      namespace="{namespace}",
+      deployment="{deployment_name}"
+    }
+
+  # Unavailable replicas
+  unavailable_replicas: |
+    kube_deployment_status_replicas_unavailable{
+      namespace="{namespace}",
+      deployment="{deployment_name}"
+    }
+
+# Resource spec queries (container limits/requests)
+resources:
+  # Memory limit
+  memory_limit: |
+    kube_pod_container_resource_limits{
+      namespace="{namespace}",
+      pod=~"{pod_pattern}",
+      container="{container}",
+      resource="memory"
+    }
+
+  # Memory request
+  memory_request: |
+    kube_pod_container_resource_requests{
+      namespace="{namespace}",
+      pod=~"{pod_pattern}",
+      container="{container}",
+      resource="memory"
+    }
+
+  # CPU limit (cores)
+  cpu_limit: |
+    kube_pod_container_resource_limits{
+      namespace="{namespace}",
+      pod=~"{pod_pattern}",
+      container="{container}",
+      resource="cpu"
+    }
+
+  # CPU request (cores)
+  cpu_request: |
+    kube_pod_container_resource_requests{
+      namespace="{namespace}",
+      pod=~"{pod_pattern}",
+      container="{container}",
+      resource="cpu"
+    }
+
+# Node queries (optional - for cluster-level context)
+nodes:
+  # Allocatable memory on nodes
+  allocatable_memory: |
+    kube_node_status_allocatable{
+      resource="memory"
+    }
+
+  # Allocatable CPU on nodes
+  allocatable_cpu: |
+    kube_node_status_allocatable{
+      resource="cpu"
+    }

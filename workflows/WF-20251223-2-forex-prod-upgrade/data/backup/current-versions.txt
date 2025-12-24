@@ -1,0 +1,29 @@
+Current Production Image Versions
+=================================
+Recorded at: 2025-12-23 19:43:54
+
+balance-service-rel: 61
+captcha-service-rel: 16
+dd-h5-rel: 23
+dwh-service-rel: 80
+exchange-service-rel: 231
+forex-9d-h5-production: 12
+forex-admin-front-rel: 262
+forex-gateway-rel: 8
+forex-h5-rel: 44
+forex-web-rel: 201
+jcard-service-rel: 91
+jpayment-exchange-service-rel: 29
+notice-service-rel: 68
+powercard-admin-front-rel: 74
+powercard-gateway-rel: 4
+powercard-service-rel: 111
+powercard-setting-service-rel: 27
+powercard-user-service-rel: 10
+setting-service-rel: 212
+support-service-rel: 32
+tenant-h5-rel: 7
+thirdparty-service-rel: 31
+user-service-rel: 142
+uu-h5-rel: 386
+web3j-address-service-rel: 9

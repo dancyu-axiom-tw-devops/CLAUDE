@@ -1,0 +1,30 @@
+# namePrefix: dev-
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: waas2-prod
+
+images:
+- name:  asia-east2-docker.pkg.dev/uu-prod/waas-prod/service-tron-v2-rel
+  newTag: '70'
+- name: asia-east2-docker.pkg.dev/uu-prod/waas-prod/busybox
+  newTag: '1.37.0'
+
+labels:
+  - pairs:
+      role: apps
+    includeTemplates: true
+
+resources:
+  - service-tron.yml
+
+## // ------------------------------------------------------------------- // ##
+## * env * ##
+configMapGenerator:
+- name: service-tron-bootstrap.yml
+  files:
+  - env/bootstrap.yml
+  namespace: waas2-prod
+  options:
+    disableNameSuffixHash: true
+## // ------------------------------------------------------------------- // ##

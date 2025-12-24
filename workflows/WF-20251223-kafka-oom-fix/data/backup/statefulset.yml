@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  namespace: forex-stg
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  selector:
+    matchLabels:
+      app: kafka
+  replicas: 1
+  podManagementPolicy: Parallel
+  serviceName: kafka-svc
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      restartPolicy: Always
+      nodeSelector:
+        env: stg
+        role: apps
+        project: forex
+        team: forex
+      automountServiceAccountToken: false
+      initContainers:
+      - name: fix-permissions
+        image: harbor.innotech-stage.com/forex-infra/busybox:1.36
+        command: ["sh", "-c", "chown -R 1001:1001 /kafka"]
+        volumeMounts:
+        - name: data
+          mountPath: /kafka
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: kafka
+        image: harbor.innotech-stage.com/forex-infra/kafka
+        imagePullPolicy: "Always"
+        command:
+          - /bin/bash
+          - -c
+          - |
+            echo "POD_NAME=$POD_NAME"
+            export KAFKA_CFG_NODE_ID=$(echo "$POD_NAME" | awk -F'-' '{print $NF}')
+            echo "KAFKA_CFG_NODE_ID=$KAFKA_CFG_NODE_ID"
+            export KAFKA_CFG_ADVERTISED_LISTENERS="PLAINTEXT://kafka:9094,EXTERNAL://${POD_NAME}.kafka-svc.forex-stg.svc.cluster.local:9092"
+            echo "KAFKA_CFG_ADVERTISED_LISTENERS=$KAFKA_CFG_ADVERTISED_LISTENERS"
+            export KAFKA_JMX_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=${POD_NAME}.kafka-svc.forex-stg.svc.cluster.local -Dcom.sun.management.jmxremote.port=$JMX_PORT -Dcom.sun.management.jmxremote.rmi.port=$JMX_PORT -javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent.jar=5556:/opt/jmx_exporter/kafka.yml"
+            exec /opt/bitnami/scripts/kafka/entrypoint.sh /opt/bitnami/scripts/kafka/run.sh
+        ports:
+        - containerPort: 9092
+          name: kafka-port
+        - containerPort: 9093
+          name: controller-port
+        - containerPort: 9094
+          name: intbroker-port
+        - containerPort: 5555
+          name: kafka-jmx-port
+        - containerPort: 5556
+          name: metrics-port
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "512Mi"
+          limits:
+            cpu: "4000m"
+            memory: "5Gi"
+        envFrom:
+        - secretRef:
+            name: kafka-env
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        livenessProbe:
+          tcpSocket:
+            port: 9092
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+        securityContext:
+          runAsUser: 1001
+          runAsGroup: 0
+          runAsNonRoot: true
+          readOnlyRootFilesystem: false
+          allowPrivilegeEscalation: false
+          privileged: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - name: data
+          mountPath: /kafka
+        - name: kafka-auth
+          mountPath: /etc/kafka/kafka_server_jaas.conf
+          subPath: kafka_server_jaas.conf
+        - name: kafka-client-auth
+          mountPath: /etc/kafka/client.properties
+          subPath: client.properties
+        - name: kafka-jmx-prometheus-yml
+          mountPath: /opt/jmx_exporter/kafka.yml
+          subPath: kafka.yml
+      volumes:
+      - name: data
+        emptyDir: {}
+      - name: kafka-auth
+        secret:
+          secretName: kafka-server-jaas
+      - name: kafka-client-auth
+        secret:
+          secretName: client-properties
+      - name: kafka-jmx-prometheus-yml
+        secret:
+          secretName: kafka-yml

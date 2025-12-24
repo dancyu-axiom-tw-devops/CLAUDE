@@ -1,0 +1,114 @@
+# Threshold Configuration for Exchange Service Health Check
+# All thresholds can be adjusted based on observed service behavior
+
+# Memory thresholds
+memory:
+  # Usage thresholds (% of limit)
+  usage_warning: 75          # Warning when memory usage exceeds 75% of limit
+  usage_critical: 85         # Critical when memory usage exceeds 85% of limit
+
+  # Memory leak detection thresholds
+  leak_slope_threshold: 10   # MB/hour - minimum slope to consider as leak
+  leak_r_squared_threshold: 0.7  # R² value - correlation strength (0.7 = strong)
+  leak_p_value_threshold: 0.05   # p-value for statistical significance
+
+  # Resource allocation thresholds
+  over_provision_ratio: 0.5  # Consider over-provisioned if avg < 50% of request
+  under_provision_ratio: 0.85  # Consider under-provisioned if p95 > 85% of limit
+
+  # Request/Limit ratio warning
+  qos_ratio_warning: 2.0     # Warn if limit/request > 2 (affects QoS class)
+
+# CPU thresholds
+cpu:
+  # Usage thresholds (% of limit)
+  usage_warning: 70          # Warning when CPU usage exceeds 70% of limit
+  usage_critical: 85         # Critical when CPU usage exceeds 85% of limit
+
+  # Resource allocation thresholds
+  over_provision_ratio: 0.4  # Consider over-provisioned if avg < 40% of request
+  under_provision_ratio: 0.80  # Consider under-provisioned if p95 > 80% of limit
+
+  # Request/Limit ratio warning
+  qos_ratio_warning: 3.0     # Warn if limit/request > 3
+
+# HPA (HorizontalPodAutoscaler) behavior thresholds
+hpa:
+  # Over-scaling detection
+  over_scaling_min_replicas: 5      # Check for over-scaling if replicas >= 5
+  over_scaling_cpu_threshold: 0.5   # ...and avg CPU < 0.5 cores
+  over_scaling_memory_threshold: 2000  # ...or avg memory < 2000Mi
+
+  # Under-scaling detection
+  under_scaling_max_replicas: 2     # Check for under-scaling if replicas <= 2
+  under_scaling_cpu_threshold: 2.0  # ...and avg CPU > 2.0 cores
+  under_scaling_memory_threshold: 5000  # ...or avg memory > 5000Mi
+
+  # HPA efficiency thresholds
+  target_utilization_buffer: 10     # % - acceptable deviation from target
+  flapping_detection_window: 24     # hours - window to detect HPA flapping
+  flapping_change_threshold: 5      # number of replica changes to consider flapping
+
+# Event thresholds
+events:
+  # OOMKilled events
+  oom_critical_count: 1      # Any OOMKilled event is critical
+  oom_lookback_hours: 24     # Look back 24 hours for OOM events
+
+  # Pod restart events
+  restart_warning_count: 3   # Warning if restarts > 3 in lookback period
+  restart_critical_count: 10 # Critical if restarts > 10 in lookback period
+  restart_lookback_hours: 24 # Look back 24 hours for restart events
+
+  # CrashLoopBackOff events
+  crashloop_warning_count: 1 # Warning if any CrashLoopBackOff detected
+  crashloop_lookback_hours: 24
+
+# Data collection settings
+collection:
+  # Time range for metrics collection
+  lookback_hours: 24         # Collect metrics for past 24 hours
+
+  # Prometheus query settings
+  step: "5m"                 # Step size for range queries (5 minutes)
+  timeout: 30                # Query timeout in seconds
+
+  # Percentile calculations
+  percentiles: [50, 75, 90, 95, 99]  # Percentiles to calculate for usage metrics
+
+# Report settings
+report:
+  # Issue severity levels
+  severity_order: ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]
+
+  # Maximum issues to include in Slack notification (full report in JSON)
+  slack_max_issues: 10
+
+  # Markdown formatting
+  use_emoji: true           # Use emoji in status indicators
+  include_charts: false     # Include ASCII charts (future feature)
+
+  # Status indicators
+  status_healthy: "🟢"
+  status_warning: "🟡"
+  status_critical: "🔴"
+  trend_increasing: "📈"
+  trend_decreasing: "📉"
+  trend_stable: "➡️"
+
+# Service-specific settings
+service:
+  name: "exchange-service"
+  namespace: "forex-prod"
+  deployment: "exchange-service"
+  hpa: "exchange-service"
+  container: "exchange-service"  # Container name within the pod
+
+  # Expected resource configuration (for comparison)
+  expected_resources:
+    memory:
+      request: "4096Mi"
+      limit: "6144Mi"
+    cpu:
+      request: "1000m"
+      limit: "4000m"

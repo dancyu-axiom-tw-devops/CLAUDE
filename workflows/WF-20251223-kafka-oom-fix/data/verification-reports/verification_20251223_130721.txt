@@ -1,0 +1,57 @@
+======================================
+1. Pod Status Check
+======================================
+[0;32m✅ Pod is Running[0m
+NAME      READY   STATUS    RESTARTS   AGE   IP             NODE                           NOMINATED NODE   READINESS GATES
+kafka-0   1/1     Running   0          49m   10.42.82.178   forex-stg-k8s-service-node01   <none>           <none>
+Restart count: 0
+[0;32m✅ No restarts[0m
+======================================
+2. OOMKilled Check
+======================================
+[0;32m✅ No previous termination[0m
+[0;32m✅ No OOM events found[0m
+======================================
+3. Resource Configuration Check
+======================================
+Memory Request: 2Gi
+Memory Limit: 6Gi
+[0;32m✅ Memory limit correctly set to 6Gi[0m
+[0;32m✅ Memory request correctly set to 2Gi[0m
+======================================
+4. Memory Usage Check
+======================================
+Current memory usage: 714Mi
+Memory usage: 11%
+[0;32m✅ Memory usage is healthy (<85%)[0m
+======================================
+5. JVM Parameters Verification
+======================================
+Checking JVM heap and direct memory settings...
+[0;31m❌ JVM Heap Max: NOT set to 3072m[0m
+[0;31m❌ JVM Heap Min: NOT set to 3072m[0m
+[0;31m❌ Direct Memory: NOT set to 1536m[0m
+
+Full JVM parameters:
+======================================
+6. Kafka Functionality Test
+======================================
+Listing Kafka topics...
+[0;31m❌ Failed to list Kafka topics[0m
+Creating test topic: verify-test-1766466446
+[1;33m⚠️  Failed to create test topic (may be expected if permissions restricted)[0m
+======================================
+7. JMX Metrics Check
+======================================
+Checking JMX Prometheus exporter...
+[0;32m✅ JMX metrics endpoint is accessible[0m
+======================================
+Summary
+======================================
+Verification completed: 7 checks performed
+Report saved to: /Users/user/CLAUDE/docs/workflows/WF-20251223-kafka-oom-fix/data/verification-reports/verification_20251223_130721.txt
+[0;32m✅ Deployment verification completed successfully![0m
+Next steps:
+  1. Review full report at: /Users/user/CLAUDE/docs/workflows/WF-20251223-kafka-oom-fix/data/verification-reports/verification_20251223_130721.txt
+  2. Continue monitoring for 24 hours
+  3. Run this script hourly for initial monitoring

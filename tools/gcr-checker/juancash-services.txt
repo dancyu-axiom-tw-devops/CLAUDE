@@ -1,0 +1,96 @@
+# JuanCash Services Image List
+# 基於 /Users/user/JUANCASH-project/github/juancash-prod-k8s-deploy/ 的實際服務
+# 取消註解需要檢查的服務，並更新版本號
+
+# ========================================
+# API Services (7)
+# ========================================
+
+# juanworld-api-rel:latest
+# juanworld-admin-api-rel:latest
+# juancash-open-api-rel:latest
+# juancash-bank-api-rel:latest
+# juancash-applet-api-rel:latest
+# juancash-clicent-api-rel:latest
+# juanword-api-shopmanager-rel:latest
+
+# ========================================
+# APP Services - Admin (9)
+# ========================================
+
+# juanworld-admin-settlement-rel:latest
+# juanworld-admin-txorder-rel:latest
+# juancash-admin-bank-rel:latest
+# juancash-admin-finance-rel:latest
+# juancash-admin-mgmt-rel:latest
+# juancash-admin-pay-rel:latest
+# juancash-admin-system-rel:latest
+# juancash-admin-txorder-rel:latest
+# juancash-admin-withdrawal-rel:latest
+
+# ========================================
+# APP Services - Scheduler (4)
+# ========================================
+
+# juancash-scheduler-bank-rel:latest
+# juancash-scheduler-pay-rel:latest
+# juancash-scheduler-system-rel:latest
+# juancash-scheduler-txorder-rel:latest
+
+# ========================================
+# APP Services - App (10+)
+# ========================================
+
+# juancash-app-bank-rel:latest
+# juancash-app-pay-rel:latest
+# juancash-app-system-rel:latest
+# juancash-app-txorder-rel:latest
+# juancash-app-withdrawal-rel:latest
+# juancash-app-merchant-rel:latest
+# juanworld-app-merchant-rel:latest
+# juanworld-app-settlement-rel:latest
+# juanworld-riskcontrolservice-rel:latest
+
+# ========================================
+# APP Services - Open (4)
+# ========================================
+
+# juancash-open-bank-rel:latest
+# juancash-open-pay-rel:latest
+# juancash-open-system-rel:latest
+# juancash-open-txorder-rel:latest
+
+# ========================================
+# APP Services - Socket (2)
+# ========================================
+
+# juancash-socket-app-rel:latest
+# juancash-socket-merchant-rel:latest
+
+# ========================================
+# APP Services - Client (4)
+# ========================================
+
+# juancash-client-finance-rel:latest
+# juancash-client-merchant-rel:latest
+# juancash-client-settlement-rel:latest
+# juancash-client-withdrawal-rel:latest
+
+# ========================================
+# Frontend Services
+# ========================================
+
+# static-merchant:latest
+# static-www:latest
+# static-agent:latest
+# static-download:latest
+# juanworld-merchant-frontend-rel:latest
+# juancash-html5-frontend-rel:latest
+# juancash-app-frontend-rel:latest
+
+# ========================================
+# Infrastructure
+# ========================================
+
+# nginx:1.24.0
+# busybox-curl:1

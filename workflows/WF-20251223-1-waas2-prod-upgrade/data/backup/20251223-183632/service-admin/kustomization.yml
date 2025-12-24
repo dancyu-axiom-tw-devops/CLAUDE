@@ -1,0 +1,34 @@
+# namePrefix: dev-
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: waas2-prod
+
+images:
+- name:  asia-east2-docker.pkg.dev/uu-prod/waas-prod/service-waas-admin-rel
+  newTag: '82'
+
+labels:
+  - pairs:
+      env: prod
+    includeTemplates: true
+
+resources:
+  - service-admin.yml
+
+## // ------------------------------------------------------------------- // ##
+## * env * ##
+configMapGenerator:
+- name: service-admin-bootstrap.yml
+  files:
+  - env/bootstrap.yml
+  namespace: waas2-prod
+  options:
+    disableNameSuffixHash: true
+- name: service-admin-default-conf
+  files:
+  - env/default.conf
+  namespace: waas2-prod
+  options:
+    disableNameSuffixHash: true
+## // ------------------------------------------------------------------- // ##

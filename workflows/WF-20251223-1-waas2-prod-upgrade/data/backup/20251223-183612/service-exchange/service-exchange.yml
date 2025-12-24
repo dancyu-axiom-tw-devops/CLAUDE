@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-exchange
+  namespace: waas2-prod
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  selector:
+    matchLabels:
+      app: service-exchange
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: service-exchange
+      annotations:
+        reloader.stakater.com/auto: "true"
+        ack.aliyun.com/rds_id: rm-3ns3f62rw71yg26aa
+        ack.aliyun.com/white_list_name: rds_whitelist
+    spec:
+      restartPolicy: Always
+      nodeSelector:
+        role: apps
+      automountServiceAccountToken: false
+#      initContainers:
+#      - name: fix-permissions
+#        image:asia-east2-docker.pkg.dev/uu-prod/waas-prod/busybox
+#        command: ["sh", "-c", "chown -R 1000:1000 /9duu/service-exchange/logs"]
+#        volumeMounts:
+#        - name: log
+#          mountPath: /9duu/service-exchange/logs
+#        securityContext:
+#          runAsUser: 0
+      imagePullSecrets:
+      - name: gcp-pull-secret
+      containers:
+      - name: service-exchange
+        image: asia-east2-docker.pkg.dev/uu-prod/waas-prod/service-exchange-rel
+        imagePullPolicy: "Always"
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+#        command:
+#        - sh
+#        - -c
+#        - |
+#          tail -f /etc/hosts
+        ports:
+        - containerPort: 9501
+          name: service-api
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "512Mi"
+          limits:
+            cpu: "400m"
+            memory: "8Gi"
+        livenessProbe:
+          tcpSocket:
+            port: 9501
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 20
+          successThreshold: 1
+        readinessProbe:
+          tcpSocket:
+            port: 9501
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 20
+          successThreshold: 1
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: false
+          allowPrivilegeEscalation: false
+          privileged: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - name: timezone
+          mountPath: /etc/localtime
+        - name: bootstrap-yml
+          mountPath:  /9duu/service-exchange/config/bootstrap.yml
+          subPath: bootstrap.yml
+        - name: log
+          mountPath: /9duu/service-exchange/logs/
+          subPathExpr: service-exchange/$(POD_NAME)
+        - name: decryptor
+          mountPath: /9duu/libveryday.so
+          subPath: c-shared-so/libveryday.so
+      volumes:
+      - name: timezone
+        hostPath:
+          path: /etc/localtime
+      - name:  bootstrap-yml
+        configMap:
+          name: service-exchange-bootstrap.yml
+          defaultMode: 0666
+      - name: decryptor
+        persistentVolumeClaim:
+          claimName: waas2-tenant-prod-dcpt-pvc
+      - name: log
+        persistentVolumeClaim:
+          claimName: waas2-tenant-prod-log-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: waas2-prod
+  name: service-exchange-svc
+  labels:
+    app: service-exchange
+spec:
+  type: ClusterIP
+  selector:
+    app: service-exchange
+  ports:
+  - name: "service-api"
+    port: 9501
+    targetPort: 9501

@@ -1,0 +1,31 @@
+# namePrefix: dev-
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: waas2-prod
+
+images:
+- name:  asia-east2-docker.pkg.dev/uu-prod/waas-prod/service-exchange-rel
+  newTag: '75'
+- name: asia-east2-docker.pkg.dev/uu-prod/waas-prod/busybox
+  newTag: '1.37.0'
+
+labels:
+  - pairs:
+      env: prod
+    includeTemplates: true
+
+resources:
+  - service-exchange.yml
+  - service-exchange-np.yml
+
+## // ------------------------------------------------------------------- // ##
+## * env * ##
+configMapGenerator:
+- name: service-exchange-bootstrap.yml
+  files:
+  - env/bootstrap.yml
+  namespace: waas2-prod
+  options:
+    disableNameSuffixHash: true
+## // ------------------------------------------------------------------- // ##

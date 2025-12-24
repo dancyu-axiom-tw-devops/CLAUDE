@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: forex-prod
+
+components:
+  - ../components/images/
+
+# 註釋: replicas 由 HPA 控制，這裡設置基準值
+replicas:
+  - name: exchange-service
+    count: 2
+
+labels:
+  - pairs:
+      env: prod
+      project: forex
+      team: forex
+    includeTemplates: true
+
+resources:
+  - deployment.yml
+  - service.yml
+  - network-policy.yml
+  - hpa.yml  # 新增 HPA 配置
+
+secretGenerator:
+  - name: exchange-service-env
+    envs:
+      - env/forex.env
+    options:
+      disableNameSuffixHash: true

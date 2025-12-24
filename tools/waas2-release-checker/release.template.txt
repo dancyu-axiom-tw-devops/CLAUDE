@@ -1,0 +1,31 @@
+# Waas2 Release Template
+# Format: service-name-rel#version
+#
+# 使用說明：
+# 1. 複製此範本建立新的 release 檔案
+# 2. 在 Backend/Frontend 區塊填入要發布的服務
+# 3. 格式：service-xxx-rel#版本號
+# 4. # 開頭為註解
+#
+# 範例：
+#   Backend
+#   service-search-rel#60
+#   service-exchange-rel#8
+#
+# 執行檢查：
+#   ./check-waas2-release.sh release-YYYYMMDD.txt
+
+Backend
+# service-search-rel#60
+# service-exchange-rel#8
+# service-tron-rel#70
+# service-eth-rel#1
+# service-user-rel#1
+# service-api-rel#1
+# service-gateway-rel#1
+# service-notice-rel#1
+# service-pol-rel#1
+# service-setting-rel#1
+
+Frontend
+# service-admin-rel#82

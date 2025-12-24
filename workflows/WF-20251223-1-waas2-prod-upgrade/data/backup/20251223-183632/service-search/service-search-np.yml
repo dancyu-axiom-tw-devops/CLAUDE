@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: service-search
+  namespace: waas2-prod
+spec:
+  podSelector:
+    matchLabels:
+      app: service-search  # 保護帶有 app=service-search 標籤的 Pod
+  policyTypes:
+    - Ingress  # 只控制入站流量
+  ingress: # 1. 允許來自 service-user 的訪問
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: waas2-prod
+          podSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - service-user  # 只允許帶有 app=service-user 標籤的 Pod 訪問
+                  - service-api
+                  - service-notice
+                  - service-exchange
+                  - service-tron
+                  - service-gateway
+      ports:
+        - protocol: TCP
+          port: 9601
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: waas2-prod
+          podSelector:
+            matchLabels:
+              app: xxl-job
+      ports:
+        - protocol: TCP
+          port: 19601

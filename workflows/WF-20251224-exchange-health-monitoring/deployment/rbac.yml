@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: exchange-health-check
+  namespace: forex-prod
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: exchange-health-check
+  namespace: forex-prod
+rules:
+- apiGroups: [""]
+  resources: ["pods", "events"]
+  verbs: ["get", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get"]
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: exchange-health-check
+  namespace: forex-prod
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: exchange-health-check
+subjects:
+- kind: ServiceAccount
+  name: exchange-health-check
+  namespace: forex-prod
+
+---
+# ClusterRole for accessing Prometheus (in monitoring namespace)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: exchange-health-check-prometheus
+rules:
+- apiGroups: [""]
+  resources: ["services"]
+  resourceNames: ["prometheus-operated"]
+  verbs: ["get"]
+- nonResourceURLs: ["/api/v1/*"]
+  verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: exchange-health-check-prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: exchange-health-check-prometheus
+subjects:
+- kind: ServiceAccount
+  name: exchange-health-check
+  namespace: forex-prod

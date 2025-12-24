@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: eth-service
+  profiles:
+    active: rel
+  cloud:
+    nacos:
+      discovery:
+        server-addr: http://nacos-svc:8848
+        namespace: API
+        group: API
+        file-extension: yaml
+      config:
+        server-addr: http://nacos-svc:8848
+        namespace: API
+        group: API
+        file-extension: yaml
+  main:
+    allow-bean-definition-overriding: true
+    allow-circular-references: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: true

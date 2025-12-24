@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exchange-health-check-config
+  namespace: forex-prod
+data:
+  PROMETHEUS_URL: "http://prometheus-operated.monitoring.svc.cluster.local:9090"
+  SERVICE_NAMESPACE: "forex-prod"
+  SERVICE_NAME: "exchange-service"
+  DEPLOYMENT_NAME: "exchange-service"
+  HPA_NAME: "exchange-service"
+  CONTAINER_NAME: "exchange-service"
+  SLACK_CHANNEL: "#sre-alerts"
+  REPORT_DIR: "/reports"
+  LOOKBACK_HOURS: "24"
+  QUERY_TIMEOUT: "30"

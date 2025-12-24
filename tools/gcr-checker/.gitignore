@@ -1,0 +1,14 @@
+# Ignore release image lists (except templates)
+release-*.txt
+my-*.txt
+check-report-*.txt
+
+# Ignore credentials
+*.json
+!*.template.json
+
+# Ignore logs
+*.log
+
+# Ignore macOS files
+.DS_Store

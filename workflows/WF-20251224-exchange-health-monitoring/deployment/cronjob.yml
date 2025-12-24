@@ -1,0 +1,71 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: exchange-health-check
+  namespace: forex-prod
+spec:
+  # Schedule: Daily at 09:00 UTC+8 = 01:00 UTC
+  schedule: "0 1 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400  # Keep job for 24h
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800     # 30 minutes timeout
+      template:
+        metadata:
+          labels:
+            app: exchange-health-check
+        spec:
+          serviceAccountName: exchange-health-check
+          restartPolicy: Never
+          containers:
+          - name: health-check
+            image: asia-east2-docker.pkg.dev/uu-prod/uu-prod/forex-infra/exchange-health-check:latest
+            imagePullPolicy: Always
+            envFrom:
+            - configMapRef:
+                name: exchange-health-check-config
+            env:
+            - name: SLACK_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: slack-credentials
+                  key: bot-token
+                  optional: true
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: slack-credentials
+                  key: webhook-url
+                  optional: true
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+            volumeMounts:
+            - name: reports
+              mountPath: /reports
+          volumes:
+          - name: reports
+            persistentVolumeClaim:
+              claimName: health-check-reports
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: health-check-reports
+  namespace: forex-prod
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard
