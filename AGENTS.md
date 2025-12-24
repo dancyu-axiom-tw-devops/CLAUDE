@@ -61,7 +61,17 @@ updated: YYYY-MM-DD
 
 做任何推送前先 pull 
 針對以下目錄的專案，使用 `git-tp` 取代 `git` 指令
-- 其他版控：使用標準 `git` 指令
+- /Users/user/PIGO-project/gitlab.axiom-infra.com/pigo-prod-k8s-deploy
+- /Users/user/PIGO-project/gitlab.axiom-infra.com/pigo-prod-k8s-infra-deploy
+- /Users/user/PIGO-project/gitlab.axiom-infra.com/pigo-prod-k8s-nacos
+- /Users/user/PIGO-project/gitlab.axiom-infra.com/pigo-prod-k8s-sqlexec-deploy
+- /Users/user/FOREX-project/gitlab.axiom-infra.com/forex-prod-k8s-deploy
+- /Users/user/FOREX-project/gitlab.axiom-infra.com/forex-prod-k8s-infra-deploy
+- /Users/user/FOREX-project/gitlab.axiom-infra.com/forex-prod-k8s-nacos-config
+- /Users/user/Waas2-project/gitlab.axiom-infra.com/waas2-prod-dns-record-mgmt
+- /Users/user/Waas2-project/gitlab.axiom-infra.com/waas2-tenant-k8s-deploy
+- /Users/user/Waas2-project/gitlab.axiom-infra.com/waas2-tenant-nacos-deploy
+- /Users/user/Waas2-project/gitlab.axiom-infra.com/waas2-tenant-sensitive-k8s-deploy
 
 ## 權限規範
 
@@ -89,9 +99,9 @@ updated: YYYY-MM-DD
 ```
 ~/CLAUDE/credentials/
 ├── README.md                    # 說明文件
-├── <service>-credentials.env    # 環境變數格式
-├── <service>-key.json           # JSON 格式 credentials
-└── <service>-webhook.txt        # Webhook URLs
+├── <project>-<service>-credentials.env    # 環境變數格式
+├── <project>-<service>-key.json           # JSON 格式 credentials
+└── <project>-<service>-webhook.txt        # Webhook URLs
 ```
 
 #### 2. .gitignore 配置
