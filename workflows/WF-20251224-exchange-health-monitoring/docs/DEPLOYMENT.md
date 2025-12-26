@@ -44,7 +44,7 @@ kubectl create secret generic slack-credentials \
 
 ```bash
 kubectl create secret generic slack-credentials \
-  --from-literal=webhook-url=https://hooks.slack.com/services/YOUR/WEBHOOK/URL \
+  --from-literal=webhook-url=https://hooks.slack.com/services/YOUR_WEBHOOK_URL \
   -n forex-prod
 ```
 

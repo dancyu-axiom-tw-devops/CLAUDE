@@ -158,7 +158,7 @@ updated: 2025-12-24
 # Set environment
 export KUBECONFIG=~/.kube/config-forex-prod
 export PROMETHEUS_URL=http://localhost:9090  # port-forward
-export SLACK_WEBHOOK_URL=https://hooks.slack.com/services/TEST
+export SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR_WEBHOOK_URL
 
 # Run healthcheck
 python3 scripts/healthcheck.py

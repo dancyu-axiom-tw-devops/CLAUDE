@@ -1,0 +1,20 @@
+# Waas2 Tenant Services
+# Business Services
+service-admin
+service-api
+service-eth
+service-exchange
+service-gateway
+service-notice
+service-pol
+service-search
+service-setting
+service-tron
+service-user
+
+# Infrastructure (不監控)
+# nacos
+# xxl-job
+# nginx
+# kafka-ui
+# waas2-log-sls

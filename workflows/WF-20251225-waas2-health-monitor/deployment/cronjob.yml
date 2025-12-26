@@ -1,0 +1,103 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: waas2-health-monitor
+  namespace: waas2-prod
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: waas2-health-monitor
+  namespace: waas2-prod
+rules:
+- apiGroups: [""]
+  resources: ["pods", "events", "services"]
+  verbs: ["get", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets", "statefulsets"]
+  verbs: ["get", "list"]
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: waas2-health-monitor
+  namespace: waas2-prod
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: waas2-health-monitor
+subjects:
+- kind: ServiceAccount
+  name: waas2-health-monitor
+  namespace: waas2-prod
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: waas2-health-reports
+  namespace: waas2-prod
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: alibabacloud-cnfs-nas
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: waas2-health-monitor
+  namespace: waas2-prod
+  labels:
+    app: waas2-health-monitor
+spec:
+  # 每天 09:00 UTC+8 執行 (01:00 UTC)
+  schedule: "0 1 * * *"
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400  # 24小時後清理
+      template:
+        metadata:
+          labels:
+            app: waas2-health-monitor
+        spec:
+          restartPolicy: Never
+          serviceAccountName: waas2-health-monitor
+          nodeSelector:
+            role: apps
+          containers:
+          - name: health-check
+            image: asia-east2-docker.pkg.dev/uu-prod/waas-prod/waas2-health-monitor:latest
+            imagePullPolicy: Always
+            env:
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: waas2-health-monitor-secret
+                  key: slack-webhook-url
+            - name: REPORT_DIR
+              value: "/reports"
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "128Mi"
+              limits:
+                cpu: "200m"
+                memory: "256Mi"
+            volumeMounts:
+            - name: reports
+              mountPath: /reports
+          volumes:
+          - name: reports
+            persistentVolumeClaim:
+              claimName: waas2-health-reports
+          imagePullSecrets:
+          - name: gcp-pull-secret

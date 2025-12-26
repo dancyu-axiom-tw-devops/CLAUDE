@@ -216,7 +216,7 @@ nohup ./monitor-memory.sh 300 4320 &  # 持續3天
 
 ```bash
 # 在腳本開頭加入 Slack Webhook URL
-SLACK_WEBHOOK="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+SLACK_WEBHOOK="https://hooks.slack.com/services/YOUR_WEBHOOK_URL"
 
 # 發送告警函數
 send_alert() {
