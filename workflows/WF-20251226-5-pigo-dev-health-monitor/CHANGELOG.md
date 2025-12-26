@@ -244,3 +244,149 @@ rm secret-slack-webhook.yaml secret-github-app.yaml
 
 **Updated**: 2025-12-26 18:33
 **Status**: ✅ Completed
+
+## 2025-12-26 - GitHub Report Structure Update (Planned)
+
+### Background
+
+用戶要求更新 k8s-daily-monitor 的目錄結構，簡化日期層級並將日期前綴加入檔名。
+
+### Current Structure
+
+```
+k8s-daily-monitor/
+├── <project>/
+│   ├── 0-prod/
+│   ├── 1-dev/
+│   ├── 2-stg/
+│   └── 3-rel/
+│       └── YYYY/
+│           └── MM/
+│               └── DD/
+│                   ├── k8s-health.md
+│                   ├── resource-optimization.md
+│                   └── <other-checks>.md
+```
+
+**路徑範例**: `pigo/1-dev/2025/12/26/k8s-health.md`
+
+### New Structure (Planned)
+
+```
+k8s-daily-monitor/
+├── <project>/
+│   ├── 0-prod/
+│   ├── 1-dev/
+│   ├── 2-stg/
+│   └── 3-rel/
+│       └── YYYY/
+│           ├── YYMMDD-k8s-health.md
+│           ├── YYMMDD-resource-optimization.md
+│           └── YYMMDD-<other-checks>.md
+```
+
+**路徑範例**: `pigo/1-dev/2025/251226-k8s-health.md`
+
+### Changes Required
+
+#### 1. Repository Structure Documentation
+
+**File**: `/Users/user/MONITOR/k8s-daily-monitor/README.md`
+
+**Changes**:
+- 移除 `MM/DD/` 子目錄層級
+- 在檔名中加入 `YYMMDD-` 前綴
+- 更新路徑範例
+- 更新命名規則說明
+
+#### 2. Health Check Python Scripts
+
+**Files**:
+- `/Users/user/PIGO-project/hkidc-k8s-gitlab/pigo-dev-k8s-deploy/monitor/monitor-cronjob/docker/health-check.py`
+- `/Users/user/PIGO-project/hkidc-k8s-gitlab/pigo-dev-k8s-deploy/monitor/monitor-cronjob/docker/health-check-full.py` (if exists)
+
+**Current Code**:
+```python
+REPORT_YEAR = now.strftime("%Y")
+REPORT_MONTH = now.strftime("%m")
+REPORT_DAY = now.strftime("%d")
+
+REPORT_PATH = f"pigo/1-dev/{REPORT_YEAR}/{REPORT_MONTH}/{REPORT_DAY}"
+FILENAME = "k8s-health.md"
+```
+
+**New Code** (Planned):
+```python
+REPORT_YEAR = now.strftime("%Y")
+REPORT_YYMMDD = now.strftime("%y%m%d")  # 251226
+
+REPORT_PATH = f"pigo/1-dev/{REPORT_YEAR}"
+FILENAME = f"{REPORT_YYMMDD}-k8s-health.md"
+```
+
+#### 3. Docker Image Rebuild
+
+**After code changes**:
+```bash
+cd /Users/user/PIGO-project/hkidc-k8s-gitlab/pigo-dev-k8s-deploy/monitor/monitor-cronjob/docker
+./build-image.sh v2  # or next version
+docker push asia-east2-docker.pkg.dev/uu-prod/waas-prod/pigo-health-monitor:v2
+```
+
+**Update CronJob**:
+```bash
+# Update cronjob-docker.yml to use new image tag
+kubectl apply -f cronjob-docker.yml
+```
+
+#### 4. Workflow Documentation
+
+**File**: `/Users/user/CLAUDE/workflows/WF-20251226-5-pigo-dev-health-monitor/README.md`
+
+**Section to Update**:
+- **GitHub 報告結構** (line 113)
+- **路徑格式** (line 113)
+
+### Benefits of New Structure
+
+1. **扁平化目錄**: 減少巢狀深度，更易瀏覽
+2. **檔名唯一性**: 日期前綴確保檔名唯一且可排序
+3. **下載友善**: 檔案下載後即包含日期資訊
+4. **簡化路徑**: GitHub URL 更短更清晰
+5. **年度歸檔**: 按年份資料夾組織，便於長期保存
+
+### Implementation Timeline
+
+**Status**: 📋 Planned (Documentation prepared)
+
+**Next Steps** (明天繼續):
+1. ✅ 更新 k8s-daily-monitor README.md
+2. ⬜ 更新 health-check.py 報告路徑邏輯
+3. ⬜ 重新建立 Docker image
+4. ⬜ 更新 CronJob 使用新 image tag
+5. ⬜ 測試驗證新路徑格式
+6. ⬜ 更新本 workflow 文檔
+
+### Impact Analysis
+
+**檔案影響**:
+- ✅ `/Users/user/MONITOR/k8s-daily-monitor/README.md` - 需更新
+- ✅ `health-check.py` - 需修改路徑邏輯
+- ✅ Docker image - 需重建
+- ✅ 本 workflow README.md - 需更新
+
+**部署影響**:
+- ⚠️ 需重新部署 CronJob (新 image tag)
+- ⚠️ 下次執行時將使用新路徑格式
+- ✅ 舊報告不受影響 (路徑不變)
+
+**測試計劃**:
+1. 手動觸發 Job 驗證新路徑
+2. 確認 GitHub 報告成功上傳
+3. 確認 Slack 通知包含正確 URL
+4. 驗證報告格式正確
+
+---
+
+**Updated**: 2025-12-26 19:00
+**Status**: 📋 Planning Complete - Ready for Tomorrow Implementation

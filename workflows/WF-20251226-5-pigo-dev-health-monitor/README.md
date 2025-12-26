@@ -1,6 +1,6 @@
 ---
 ref: [AGENTS.md](~/CLAUDE/AGENTS.md)
-status: 已完成
+status: 進行中 (GitHub 路徑結構調整規劃完成)
 created: 2025-12-26
 updated: 2025-12-26
 ---
@@ -110,7 +110,12 @@ Report: [GitHub URL]
 
 **Repository**: `dancyu-axiom-tw-devops/k8s-daily-monitor`
 
-**路徑格式**: `pigo/1-dev/YYYY/MM/DD/k8s-health.md`
+**路徑格式**: ~~`pigo/1-dev/YYYY/MM/DD/k8s-health.md`~~ (舊格式)
+
+**新路徑格式** (2025-12-26 更新):
+- `pigo/1-dev/YYYY/YYMMDD-k8s-health.md`
+- 範例: `pigo/1-dev/2025/251226-k8s-health.md`
+- 變更: 移除 MM/DD 子目錄，日期前綴加入檔名
 
 **認證方式**: GitHub App (k8s-inspector)
 - App ID: 2539631
@@ -121,6 +126,8 @@ Report: [GitHub URL]
 - YAML frontmatter (metadata)
 - 結構化章節: Summary, Metrics, Recommendations
 - Raw data section (供自動化分析使用)
+
+**⚠️ 注意**: 路徑格式變更需更新 Python 腳本和 Docker image (詳見 CHANGELOG.md)
 
 ### 5. 環境配置
 
@@ -489,6 +496,46 @@ kubectl patch cronjob k8s-health-check -n pigo-dev -p '{"spec":{"suspend":false}
 **最後更新**: 2025-12-26
 **維護者**: PIGO DevOps Team
 
+## 待辦事項 (2025-12-26 規劃)
+
+### GitHub 報告路徑結構更新
+
+**目標**: 簡化 k8s-daily-monitor 的目錄結構
+
+**變更內容**:
+- 舊格式: `pigo/1-dev/YYYY/MM/DD/k8s-health.md`
+- 新格式: `pigo/1-dev/YYYY/YYMMDD-k8s-health.md`
+
+**實施步驟** (明天繼續):
+
+1. **更新 k8s-daily-monitor README.md**
+   - 文件: `/Users/user/MONITOR/k8s-daily-monitor/README.md`
+   - 更新目錄結構說明
+   - 更新路徑範例
+   - 更新命名規則
+
+2. **修改 health-check.py 路徑邏輯**
+   - 文件: `/Users/user/PIGO-project/hkidc-k8s-gitlab/pigo-dev-k8s-deploy/monitor/monitor-cronjob/docker/health-check.py`
+   - 變更路徑生成邏輯
+   - 更新檔名格式
+
+3. **重建 Docker Image**
+   - 執行 `./build-image.sh v2`
+   - Push 至 GCR: `asia-east2-docker.pkg.dev/uu-prod/waas-prod/pigo-health-monitor:v2`
+
+4. **更新 CronJob 配置**
+   - 更新 `cronjob-docker.yml` 使用新 image tag
+   - 部署更新: `kubectl apply -f cronjob-docker.yml`
+
+5. **測試驗證**
+   - 手動觸發 Job 測試新路徑
+   - 確認 GitHub 報告成功上傳
+   - 驗證 Slack 通知 URL 正確
+
+**詳細規劃**: 參見 [CHANGELOG.md](CHANGELOG.md) - "GitHub Report Structure Update (Planned)" 章節
+
+---
+
 ## 快速索引
 
 **下次要繼續工作時，使用以下文件**:
@@ -500,3 +547,4 @@ kubectl patch cronjob k8s-health-check -n pigo-dev -p '{"spec":{"suspend":false}
 - **報告生成器**: `monitor-cronjob/docker/report_generator.py`
 - **規格文檔**: `/Users/user/CLAUDE/docs/k8s-service-monitor.md`
 - **本工作流程記錄**: `/Users/user/CLAUDE/workflows/WF-20251226-5-pigo-dev-health-monitor/README.md`
+- **k8s-daily-monitor 結構**: `/Users/user/MONITOR/k8s-daily-monitor/README.md` ⚠️ 待更新
