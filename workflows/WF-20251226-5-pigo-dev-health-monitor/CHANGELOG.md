@@ -390,3 +390,300 @@ kubectl apply -f cronjob-docker.yml
 
 **Updated**: 2025-12-26 19:00
 **Status**: 📋 Planning Complete - Ready for Tomorrow Implementation
+
+## 2025-12-26 - Integration of K8S-SERVICE-HEALTH-CHECK-2 Specification
+
+### Background
+
+整合完整的 K8s 服務健康檢查規範文檔到本項目中。此規範定義了完整的檢查標準、輸出格式、Slack 通知與 Git 報告模板。
+
+### Specification Source
+
+**File**: `/Users/user/CLAUDE/workflows/WF-20251226-5-pigo-dev-health-monitor/K8S-SERVICE-HEALTH-CHECK-2.md`
+
+**Version**: 2.3
+**Last Updated**: 2025-01
+**Purpose**: Claude Code K8s 上線服務檢查規範
+
+### Key Specifications Integrated
+
+#### 1. Directory Structure (已實現)
+
+```
+k8s-daily-monitor/
+├── <project>/
+│   ├── 0-prod/
+│   ├── 1-dev/
+│   ├── 2-stg/
+│   └── 3-rel/
+│       └── YYYY/
+│           ├── YYMMDD-k8s-health.md
+│           ├── YYMMDD-resource-optimization.md
+│           └── YYMMDD-<other-checks>.md
+```
+
+**Status**: ✅ 已整合到路徑結構更新規劃中
+
+#### 2. Environment Codes (已實現)
+
+| Code | Environment | Description |
+|------|-------------|-------------|
+| `0-prod` | Production | 正式環境 |
+| `1-dev` | Development | 開發環境 |
+| `2-stg` | Staging | 預備環境 |
+| `3-rel` | Release | 發布環境 |
+
+**Status**: ✅ PIGO-DEV 使用 `1-dev` 代碼
+
+#### 3. Check Types Defined
+
+| Filename Format | Purpose | Status |
+|-----------------|---------|--------|
+| `YYMMDD-k8s-health.md` | 服務健康狀態檢查 | ✅ 已實現 |
+| `YYMMDD-resource-optimization.md` | 資源使用與優化建議 | 📋 待開發 |
+| `YYMMDD-security-audit.md` | 安全性稽核 | 📋 待開發 |
+| `YYMMDD-certificate-status.md` | 證書狀態檢查 | 📋 待開發 |
+| `YYMMDD-backup-status.md` | 備份狀態檢查 | 📋 待開發 |
+
+**Status**: 目前僅實現 k8s-health.md，其他類型待未來擴展
+
+#### 4. Check Categories & Thresholds
+
+規範定義了 7 大檢查類別:
+
+1. **服務狀態檢查** (Service Status)
+   - Deployment 狀態
+   - 副本就緒率
+   - ReplicaSet 數量
+
+2. **Pod 健康檢查** (Pod Health)
+   - Pod 狀態 (Running/Pending/CrashLoop)
+   - Ready 狀態
+   - 重啟次數 (1h/24h)
+   - Pod 年齡
+
+3. **資源使用檢查** (Resource Usage)
+   - CPU 使用率 (< 60% 健康, 60-80% 警告, > 80% 異常)
+   - Memory 使用率 (< 70% 健康, 70-85% 警告, > 85% 異常)
+   - HPA 狀態
+
+4. **網路連線檢查** (Network Connectivity)
+   - Service Endpoints
+   - Ingress 狀態
+   - 健康檢查端點 (HTTP 200)
+
+5. **日誌異常檢查** (Log Anomalies)
+   - Error 數量 (1h): < 10 健康, 10-50 警告, > 50 異常
+   - Warn 數量 (1h): < 50 健康, 50-200 警告, > 200 異常
+   - OOM/Panic 偵測
+
+6. **存儲檢查** (Storage)
+   - PVC 狀態 (Bound/Pending/Lost)
+   - 存儲使用率 (< 70% 健康, 70-85% 警告, > 85% 異常)
+
+7. **證書檢查** (Certificates)
+   - 證書有效期 (> 30 天健康, 7-30 天警告, < 7 天異常)
+
+**Status**: ⚠️ 目前實現部分檢查項目，需逐步完善
+
+#### 5. Slack Summary Format (已實現)
+
+規範定義了 3 種 Slack 訊息格式:
+
+- ✅ **健康狀態** - 全部正常
+- ⚠️ **警告狀態** - 發現 N 項警告
+- 🚨 **異常狀態** - 發現 N 項異常
+
+**訊息包含**:
+- 整體健康狀態 emoji
+- 專案/環境/時間資訊
+- 關鍵數據摘要 (Pods, CPU, Memory, 錯誤日誌)
+- 異常/警告項目列表
+- 完整報告連結
+
+**Status**: ✅ 已實現基本格式，但未使用 emoji (符合 PIGO 工程風格要求)
+
+#### 6. Git Markdown Report Format (已實現)
+
+規範定義了完整的 Markdown 報告模板:
+
+**包含章節**:
+1. 基本資訊 (專案、環境、時間、狀態)
+2. 檢查結果總覽 (表格形式)
+3. 各類別詳細檢查結果
+   - 服務狀態
+   - Pod 健康
+   - 資源使用
+   - 網路連線
+   - 日誌異常
+   - 存儲狀態
+   - 證書狀態
+4. 異常與警告彙整
+5. 建議事項 (短期/中期/長期)
+6. 附錄：原始檢查數據 (可摺疊)
+
+**Status**: ✅ 已透過 report_generator.py 實現基本報告格式
+
+#### 7. Automation Script (參考實現)
+
+規範提供了完整的 Bash 腳本範例:
+
+**功能**:
+- 環境代碼自動對照
+- 多項健康檢查
+- 狀態判斷 (healthy/warning/critical)
+- Slack 通知發送
+- Git 報告產生與提交
+- README 索引更新
+
+**K8s CronJob 部署**:
+- ServiceAccount + RBAC 權限定義
+- Secrets 配置 (Slack webhook, Git token)
+- ConfigMap 配置 (專案列表、閾值)
+- Dockerfile 定義
+- 部署步驟文檔
+
+**Status**: ✅ 已實現 Python 版本 (health-check.py)，使用 GitHub App 認證
+
+### Current Implementation vs Specification
+
+#### ✅ Already Implemented
+
+1. **Directory Structure**: `pigo/1-dev/YYYY/YYMMDD-k8s-health.md`
+2. **Environment Code**: `1-dev` for pigo-dev
+3. **Basic Health Checks**: Pod 狀態, 資源使用, 重啟偵測
+4. **Slack Notification**: 工程風格 (無 emoji)
+5. **Git Report**: Markdown 格式, GitHub App 上傳
+6. **CronJob Deployment**: K8s CronJob, RBAC, ServiceAccount
+7. **Automatic Cleanup**: TTL 1h, history limit 1
+
+#### ⚠️ Partially Implemented
+
+1. **Resource Thresholds**: 有定義但未完全對齊規範
+   - 目前: Memory > 80%, Memory < 50%, CPU < 20%
+   - 規範: CPU 60%/80%, Memory 70%/85%
+
+2. **Check Categories**: 僅實現部分項目
+   - ✅ Pod 健康, 資源使用
+   - ⚠️ 日誌異常 (未實現)
+   - ⚠️ 網路連線 (未實現)
+   - ⚠️ 存儲狀態 (未實現)
+   - ⚠️ 證書檢查 (未實現)
+
+3. **Report Format**: 基本結構符合，但內容不完整
+
+#### ❌ Not Implemented
+
+1. **Multi-Check Types**: 僅有 k8s-health.md
+   - 缺少: resource-optimization, security-audit, certificate-status, backup-status
+
+2. **Advanced Features**:
+   - 日誌異常統計 (Error/Warn 數量)
+   - 網路連線測試 (Endpoints, Ingress, Health endpoints)
+   - 存儲使用率檢查
+   - 證書到期時間檢查
+
+3. **README Auto-generation**:
+   - 環境 README (`pigo/1-dev/README.md`)
+   - 年度 README (`pigo/1-dev/2025/README.md`)
+   - 根目錄 README (`k8s-daily-monitor/README.md`)
+
+### Gap Analysis & Action Items
+
+#### High Priority (應優先實現)
+
+1. **對齊資源使用閾值**
+   - 調整 CPU/Memory 警告和異常閾值
+   - 與規範保持一致
+
+2. **實現日誌異常檢查**
+   - Error/Warn 數量統計
+   - 最近錯誤樣本收集
+   - OOM/Panic 偵測
+
+3. **完善報告格式**
+   - 加入「建議事項」章節
+   - 加入「原始數據附錄」
+   - 完善各檢查類別的表格展示
+
+#### Medium Priority (可逐步實現)
+
+4. **網路連線檢查**
+   - Service Endpoints 驗證
+   - Ingress 狀態檢查
+   - 健康檢查端點測試
+
+5. **存儲狀態檢查**
+   - PVC 狀態
+   - 存儲使用率
+
+6. **README 自動生成**
+   - 環境 README
+   - 年度 README
+   - 根目錄索引
+
+#### Low Priority (未來擴展)
+
+7. **證書檢查**
+   - TLS 證書到期時間
+
+8. **多種檢查類型**
+   - resource-optimization.md
+   - security-audit.md
+   - certificate-status.md
+
+9. **高級功能**
+   - Prometheus 告警規則
+   - 趨勢分析
+   - 異常偵測
+
+### Integration Notes
+
+#### 規範文檔位置
+
+**原始文檔**: `K8S-SERVICE-HEALTH-CHECK-2.md`
+**用途**: Claude Code 參考規範
+**版本**: 2.3
+**內容**:
+- 完整檢查項目定義
+- 判斷標準與閾值
+- Slack/Git 輸出格式範本
+- 自動化腳本範例
+- K8s 部署 YAML 範例
+
+#### 如何使用此規範
+
+1. **新增檢查項目**: 參考「檢查指令」和「判斷標準」章節
+2. **調整閾值**: 參考各檢查類別的「健康/警告/異常」標準
+3. **修改報告格式**: 參考「Git Markdown 報告格式」章節
+4. **擴展 Slack 通知**: 參考「Slack Summary 格式」章節
+5. **部署新環境**: 參考「自動化腳本範例」和「K8s CronJob 部署」章節
+
+#### 規範與實現的差異
+
+**規範風格**: 包含 emoji, 表格豐富, 完整檢查項目
+**PIGO 實現**: 工程風格 (無 emoji), 簡潔輸出, 核心檢查項目
+
+**原因**: PIGO 專案特別要求「工程化觀察」、「無 emoji」、「直接性建議」
+
+**結論**: 規範作為參考標準，實際實現可根據專案需求調整
+
+### Next Steps
+
+1. **評估**: 與用戶討論哪些檢查項目需要優先實現
+2. **規劃**: 制定分階段實現計劃
+3. **開發**: 逐步完善健康檢查功能
+4. **測試**: 驗證新增檢查項目的準確性
+5. **文檔**: 更新 README.md 說明已實現的功能
+
+### Reference
+
+- **規範文檔**: `K8S-SERVICE-HEALTH-CHECK-2.md`
+- **當前實現**: `health-check.py`, `report_generator.py`
+- **CronJob 配置**: `cronjob-docker.yml`
+- **工作流程文檔**: `README.md`, `CHANGELOG.md`
+
+---
+
+**Updated**: 2025-12-26 19:30
+**Status**: ✅ Specification Integrated - Gap Analysis Complete
