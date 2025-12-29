@@ -261,3 +261,54 @@ kubectl create secret generic gcr-credentials \
 - GitHub Secret Scanning: https://docs.github.com/code-security/secret-scanning
 - GitLab Secret Detection: https://docs.gitlab.com/ee/user/application_security/secret_detection/
 - Git Filter-Repo: https://github.com/newren/git-filter-repo (清理歷史)
+
+## Docker Build 規範
+
+### 跨平台編譯 (ARM Mac → x86 K8s)
+
+在 Mac (ARM/Apple Silicon) 環境編譯 Docker image 給 x86 K8s 使用時，**必須指定平台**：
+
+```bash
+docker buildx build --platform linux/amd64 --no-cache -t <image>:<tag> .
+docker push <image>:<tag>
+```
+
+若未指定平台，K8s pod 會出現 `exec format error` 錯誤。
+
+## K8s Health Monitor 規範
+
+### 排程時間表 (UTC+8)
+
+各環境間隔 5 分鐘，避免同時上傳 GitHub 產生衝突：
+
+| 環境 | 時間 | 環境 | 時間 |
+|------|------|------|------|
+| pigo-prod | 08:00 | waas-prod | 08:20 |
+| pigo-rel | 08:05 | waas-rel | 08:25 |
+| pigo-stg | 08:10 | waas-dev | 08:30 |
+| pigo-dev | 08:15 | forex-prod | 08:35 |
+
+詳細排程表：`~/CLAUDE/workflows/WF-20251226-5-pigo-dev-health-monitor/SCHEDULE.md`
+
+### Image 部署方式
+
+| 環境 | Image Registry | 備註 |
+|------|----------------|------|
+| pigo-dev/stg/rel | pigo-harbor.axiom-gaming.tech | 線下 Harbor |
+| waas-dev | waas-harbor.axiom-gaming.tech | 線下 Harbor |
+| pigo-prod | asia-east2-docker.pkg.dev/pigo-prod | **從線下 Harbor 複製到 GCR，不需另外編譯** |
+
+### Kustomize 版本管理
+
+使用 kustomization.yml 的 images 區塊管理版本：
+
+```yaml
+images:
+  - name: <registry>/<image>
+    newTag: 'v19'
+```
+
+### GitHub App 認證
+
+- App ID: 2539631 (共用於 pigo/waas2)
+- Credentials 存放：`~/CLAUDE/credentials/<project>-health-monitor/`
