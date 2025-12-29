@@ -1,15 +1,98 @@
 ---
 ref: [AGENTS.md](~/CLAUDE/AGENTS.md)
-status: 進行中 (GitHub 路徑結構調整規劃完成)
+status: ✅ v15 三環境已部署
 created: 2025-12-26
-updated: 2025-12-26
+updated: 2025-12-29
 ---
 
-# WF-20251226 - PIGO-DEV K8s Health Monitor 自動化巡檢系統
+# WF-20251226 - PIGO K8s Health Monitor 自動化巡檢系統
 
 ## 任務目標
 
-為 PIGO-DEV 環境建立自動化 Kubernetes 健康巡檢系統，每日定時檢查資源使用狀況並自動通知。
+為 PIGO 環境建立自動化 Kubernetes 健康巡檢系統，每日定時檢查資源使用狀況並自動通知。
+
+## 當前工作狀態
+
+### v15 Image Version Display + Multi-Environment ✅ 已完成
+
+**目標**:
+1. 在 Deployment 狀態表格中顯示鏡像版本
+2. 部署至所有三個環境 (pigo-dev, pigo-stg, pigo-rel)
+
+**完成項目**:
+- [x] 增加鏡像版本欄位到 Deployment 狀態表格
+- [x] 建置 Docker image v15 並推送至 Harbor
+- [x] 更新 GitHub 報告路徑格式 (使用 namespace 名稱)
+- [x] 部署 pigo-dev 環境
+- [x] 部署 pigo-stg 環境 (新增)
+- [x] 部署 pigo-rel 環境 (新增)
+- [x] 三環境測試驗證成功
+- [x] 版控推送至各 GitLab repo
+
+**v15 新功能**:
+- Deployment 表格新增「鏡像版本」欄位
+- 路徑格式: `pigo/{namespace}/YYYY/YYMMDD-k8s-health.md`
+
+**部署狀態**:
+
+| Environment | Namespace | GitHub Path | Status |
+|-------------|-----------|-------------|--------|
+| pigo-dev | pigo-dev | `pigo/pigo-dev` | ✅ 已部署 |
+| pigo-stg | pigo-stg | `pigo/pigo-stg` | ✅ 已部署 |
+| pigo-rel | pigo-rel | `pigo/pigo-rel` | ✅ 已部署 |
+
+---
+
+### v14 Path Format Update ✅ 已完成
+
+**目標**: 更新 GitHub 報告路徑格式，使用 namespace 名稱而非編號代碼
+
+**變更內容**:
+- 舊格式: `pigo/1-dev/YYYY/YYMMDD-k8s-health.md`
+- 新格式: `pigo/pigo-dev/YYYY/YYMMDD-k8s-health.md`
+
+---
+
+### v12 Enhanced Recommendations ✅ 已完成
+
+**目標**: 改進異常報告的建議說明，提供更詳細的問題說明、影響分析與處理方式
+
+**v12 建議說明格式**:
+```
+**問題說明**: CPU Throttling X% 表示該 Pod 有 X% 的時間因達到 CPU limit 而被限流
+
+**影響**: 應用程式回應時間變長，CI/CD job 執行時間增加約 X%
+
+**建議處理方式**:
+1. 增加 CPU limits
+2. 調整 requests/limits 比例
+3. 評估 HPA
+4. 效能分析
+```
+
+---
+
+### v11 Prometheus Integration ✅ 已完成
+
+**目標**: 整合 Prometheus 趨勢資料，完整實現 v10 Anti-False-Positive Decision Tree
+
+**完成項目**:
+- [x] 實作 prometheus_client.py
+- [x] 更新 health-check-full.py (Prometheus 查詢整合)
+- [x] 更新 report_generator.py (趨勢表格)
+- [x] 更新 CronJob 配置 (PROMETHEUS_URL 環境變數)
+
+**測試結果**:
+- Prometheus 連接成功: 14 pods 取得趨勢資料
+- 條件組 B (Throttling) 正確識別: `pigo-dev-gitlab-runner` throttling 39.2%
+- 趨勢表格正確顯示: CPU 10m Avg, P95, Memory P95, Throttling
+
+**關鍵資訊**:
+- Prometheus: `http://monitoring-prometheus.monitoring.svc.cluster.local:9090`
+- Docker Image: `pigo-harbor.axiom-gaming.tech/infra-devops/pigo-health-monitor:v12`
+- 詳細規劃: [K8S-SERVICE-HEALTH-CHECK-2.md](K8S-SERVICE-HEALTH-CHECK-2.md) - v11 章節
+
+---
 
 ## 專案位置
 
@@ -112,10 +195,10 @@ Report: [GitHub URL]
 
 **路徑格式**: ~~`pigo/1-dev/YYYY/MM/DD/k8s-health.md`~~ (舊格式)
 
-**新路徑格式** (2025-12-26 更新):
-- `pigo/1-dev/YYYY/YYMMDD-k8s-health.md`
-- 範例: `pigo/1-dev/2025/251226-k8s-health.md`
-- 變更: 移除 MM/DD 子目錄，日期前綴加入檔名
+**新路徑格式** (2025-12-29 更新):
+- `pigo/{namespace}/YYYY/YYMMDD-k8s-health.md`
+- 範例: `pigo/pigo-dev/2025/251229-k8s-health.md`
+- 變更: 使用 namespace 名稱，移除 MM/DD 子目錄，日期前綴加入檔名
 
 **認證方式**: GitHub App (k8s-inspector)
 - App ID: 2539631
@@ -135,9 +218,9 @@ Report: [GitHub URL]
 
 | Environment | Namespace | GitHub Path | Cluster | Status |
 |-------------|-----------|-------------|---------|--------|
-| pigo-dev | pigo-dev | `pigo/1-dev` | tp-hkidc | ✅ 已部署 |
-| pigo-stage | pigo-stg | `pigo/2-stg` | tp-hkidc | 🔲 未部署 |
-| pigo-rel | pigo-rel | `pigo/3-rel` | tp-hkidc | 🔲 未部署 |
+| pigo-dev | pigo-dev | `pigo/pigo-dev` | tp-hkidc | ✅ 已部署 |
+| pigo-stg | pigo-stg | `pigo/pigo-stg` | tp-hkidc | ✅ 已部署 |
+| pigo-rel | pigo-rel | `pigo/pigo-rel` | tp-hkidc | ✅ 已部署 |
 
 #### CronJob 配置
 
@@ -492,59 +575,30 @@ kubectl patch cronjob k8s-health-check -n pigo-dev -p '{"spec":{"suspend":false}
 ---
 
 **工作流程狀態**: ✅ 已完成
-**部署狀態**: ✅ PIGO-DEV 已部署並運行
-**最後更新**: 2025-12-26
+**部署狀態**: ✅ 三環境 (pigo-dev, pigo-stg, pigo-rel) 已部署並運行
+**Docker Image**: v15
+**最後更新**: 2025-12-29
 **維護者**: PIGO DevOps Team
-
-## 待辦事項 (2025-12-26 規劃)
-
-### GitHub 報告路徑結構更新
-
-**目標**: 簡化 k8s-daily-monitor 的目錄結構
-
-**變更內容**:
-- 舊格式: `pigo/1-dev/YYYY/MM/DD/k8s-health.md`
-- 新格式: `pigo/1-dev/YYYY/YYMMDD-k8s-health.md`
-
-**實施步驟** (明天繼續):
-
-1. **更新 k8s-daily-monitor README.md**
-   - 文件: `/Users/user/MONITOR/k8s-daily-monitor/README.md`
-   - 更新目錄結構說明
-   - 更新路徑範例
-   - 更新命名規則
-
-2. **修改 health-check.py 路徑邏輯**
-   - 文件: `/Users/user/PIGO-project/hkidc-k8s-gitlab/pigo-dev-k8s-deploy/monitor/monitor-cronjob/docker/health-check.py`
-   - 變更路徑生成邏輯
-   - 更新檔名格式
-
-3. **重建 Docker Image**
-   - 執行 `./build-image.sh v2`
-   - Push 至 GCR: `asia-east2-docker.pkg.dev/uu-prod/waas-prod/pigo-health-monitor:v2`
-
-4. **更新 CronJob 配置**
-   - 更新 `cronjob-docker.yml` 使用新 image tag
-   - 部署更新: `kubectl apply -f cronjob-docker.yml`
-
-5. **測試驗證**
-   - 手動觸發 Job 測試新路徑
-   - 確認 GitHub 報告成功上傳
-   - 驗證 Slack 通知 URL 正確
-
-**詳細規劃**: 參見 [CHANGELOG.md](CHANGELOG.md) - "GitHub Report Structure Update (Planned)" 章節
 
 ---
 
 ## 快速索引
 
-**下次要繼續工作時，使用以下文件**:
+**部署目錄**:
+- **pigo-dev**: `/Users/user/PIGO-project/hkidc-k8s-gitlab/pigo-dev-k8s-deploy/monitor/monitor-cronjob/`
+- **pigo-stg**: `/Users/user/PIGO-project/hkidc-k8s-gitlab/pigo-stage-k8s-deploy/monitor/monitor-cronjob/`
+- **pigo-rel**: `/Users/user/PIGO-project/hkidc-k8s-gitlab/pigo-rel-k8s-deploy/monitor/monitor-cronjob/`
 
-- **主要部署目錄**: `/Users/user/PIGO-project/hkidc-k8s-gitlab/pigo-dev-k8s-deploy/monitor/monitor-cronjob/`
-- **README 文檔**: `monitor-cronjob/README.md`
-- **部署腳本**: `monitor-cronjob/deploy.sh`
-- **健康檢查主程式**: `monitor-cronjob/docker/health-check.py`
-- **報告生成器**: `monitor-cronjob/docker/report_generator.py`
-- **規格文檔**: `/Users/user/CLAUDE/docs/k8s-service-monitor.md`
-- **本工作流程記錄**: `/Users/user/CLAUDE/workflows/WF-20251226-5-pigo-dev-health-monitor/README.md`
-- **k8s-daily-monitor 結構**: `/Users/user/MONITOR/k8s-daily-monitor/README.md` ⚠️ 待更新
+**核心文件**:
+- **健康檢查主程式**: `docker/health-check-full.py`
+- **報告生成器**: `docker/report_generator.py`
+- **Prometheus 客戶端**: `docker/prometheus_client.py`
+
+**Secrets 位置** (不納入版控):
+- `/Users/user/CLAUDE/credentials/pigo-dev-health-monitor/`
+- `/Users/user/CLAUDE/credentials/pigo-stg-health-monitor/`
+- `/Users/user/CLAUDE/credentials/pigo-rel-health-monitor/`
+
+**GitHub 報告**:
+- Repository: `dancyu-axiom-tw-devops/k8s-daily-monitor`
+- 路徑格式: `pigo/{namespace}/YYYY/YYMMDD-k8s-health.md`
