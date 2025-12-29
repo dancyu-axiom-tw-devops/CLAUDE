@@ -357,37 +357,41 @@ kubectl apply -f cronjob-docker.yml
 
 ### Implementation Timeline
 
-**Status**: 🚧 In Progress (3/7 完成)
+**Status**: ✅ Completed (7/7 完成)
 
-**Implementation Progress** (2025-12-27):
+**Implementation Progress** (2025-12-27 ~ 2025-12-29):
+
 1. ✅ 更新 k8s-daily-monitor README.md
    - Commit: `e6b231c`
    - Repository: dancyu-axiom-tw-devops/k8s-daily-monitor
    - 更新目錄結構說明、檔名格式、路徑範例
 
 2. ✅ 更新 health-check-full.py 報告路徑邏輯
-   - Commit: `3cb0643`
-   - Repository: pigo-dev-k8s-deploy
    - 路徑: `pigo/1-dev/YYYY` (移除 MM/DD)
    - 檔名: `{YYMMDD}-k8s-health.md`
+   - 新增 `git pull --rebase` 處理衝突
 
 3. ✅ 重新建立 Docker image v2
    - Image: `pigo-harbor.axiom-gaming.tech/infra-devops/pigo-health-monitor:v2`
-   - Digest: `sha256:0236b8e3f8f12a4e40dd3ba7a931c52f82bfcc4133f2e2060153631acf848f52`
-   - Status: 本地建置成功
+   - Digest: `sha256:247cae0ad725ac53cae6eb26ec219148638a0f6c365237ece0f4b76d983f4265`
 
-4. ⚠️ 推送 Docker image 到 Harbor
-   - Status: 網路連線問題，待重試
-   - Error: `context deadline exceeded`
+4. ✅ 推送 Docker image 到 Harbor
+   - Status: 成功 (2025-12-29)
 
-5. ⬜ 更新 CronJob 使用新 image tag
-   - 待 Docker image push 成功後執行
+5. ✅ 更新 CronJob 配置
+   - Image tag: v4 → v2
+   - Schedule: `0 9 * * *` (Asia/Taipei timezone)
+   - 新增 `timeZone: "Asia/Taipei"` 設定
+   - 更新 ConfigMap 中的路徑格式
 
-6. ⬜ 測試驗證新路徑格式
-   - 待 CronJob 更新後測試
+6. ✅ 測試驗證新路徑格式
+   - Job: `manual-test-1766973800`
+   - 結果: 報告成功上傳至 `pigo/1-dev/2025/251229-k8s-health.md`
+   - Slack 通知正常發送
+   - GitHub 推送成功
 
-7. ⬜ 更新本 workflow 文檔
-   - 待測試完成後更新
+7. ✅ 更新本 workflow 文檔
+   - CHANGELOG.md 已更新
 
 ### Impact Analysis
 
