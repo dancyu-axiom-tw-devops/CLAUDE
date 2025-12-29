@@ -1,0 +1,7 @@
+Backend
+dwh-service-rel#85
+exchange-service-rel#240
+user-service-rel#150
+
+Frontend
+forex-admin-front-rel#270

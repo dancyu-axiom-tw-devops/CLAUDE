@@ -7,8 +7,8 @@
 
 set -e
 
-DEPLOY_DIR="/Users/user/FOREX-project/prod-cloud/forex-prod-k8s-deploy"
-WORKFLOW_DIR="/Users/user/CLAUDE/workflows/WF-20251223-2-forex-prod-upgrade"
+DEPLOY_DIR="/Users/user/FOREX-project/gitlab.axiom-infra.com/forex-prod-k8s-deploy"
+WORKFLOW_DIR="/Users/user/CLAUDE/workflows/WF-20251229-1-forex-prod-upgrade"
 UPGRADE_LIST="$WORKFLOW_DIR/data/new-versions/upgrade-list.txt"
 CURRENT_VERSIONS="$WORKFLOW_DIR/data/backup/current-versions.txt"
 VERSION_TABLE="$WORKFLOW_DIR/data/version-comparison-table.md"
