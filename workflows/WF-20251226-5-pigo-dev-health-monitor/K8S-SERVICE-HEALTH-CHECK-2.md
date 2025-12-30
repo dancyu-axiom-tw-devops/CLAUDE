@@ -907,12 +907,19 @@ curl -X POST https://hooks.slack.com/services/YOUR/WEBHOOK/URL \
 | Memory OOM | OOMKill 發生 | 🚨 Resource pressure (Memory) |
 | Memory P95 | P95(mem/limit) > 85% [30min] | 🚨 Resource pressure (Memory) |
 | Memory Watch | P95(mem/limit) > 75% [30min] | 🟠 Memory pressure (Watch) |
+| **Runner/Batch Throttling** | Runner/Batch 類型 + Throttling > 20% | 🚨 優先調高 limit (v19) |
 | CPU 條件組 A | P95(cpu/req) ≥ 80% [30min] + 持續 ≥ 15min | 🚨 Resource pressure (CPU) |
-| CPU 條件組 B | Throttling ≥ 10% | 🚨 Resource pressure (CPU) |
+| CPU 條件組 B | Throttling ≥ 10% (非 Runner/Batch) | 🚨 Resource pressure (CPU) |
 | CPU 條件組 C | Snapshot ≥ 90% (limit) + restart > 0 | 🚨 Resource pressure (CPU) |
 | CPU 趨勢壓力 | 10m avg > 60% OR P95 > 70%, throttling < 10% | 🟠 Sustained pressure |
 | CPU Spike | Snapshot hit limit, 無趨勢佐證 | 🟡 Spike detected |
 | App 異常 | restart > 0 + exit_code != 0 | 🚨 Application instability |
+
+> **v19 Runner/Batch 類型特殊規則**:
+> - Runner/Batch 類型辨識: 名稱含 `runner`, `gitlab-runner`, `jenkins`, `ci-`, `cd-`, `build-`, `executor`, `cron`, `job`, `batch`
+> - 這類工作負載有突發性 CPU 使用模式，P95 指標不適用
+> - 閾值為 Throttling > 20%（比一般服務的 10% 更寬鬆）
+> - 建議處理方式：優先調高 CPU limit，不需參考 P95
 
 ---
 
@@ -2155,12 +2162,12 @@ kubectl patch cronjob k8s-health-check -n monitoring \
 ---
 
 > **文件版本**: 2.6 (v11 Prometheus Integration)
-> **最後更新**: 2025-12-29
+> **最後更新**: 2025-12-30
 > **用途**: Claude Code K8s 上線服務檢查規範
 > **執行方式**: K8s CronJob
 > **輸出**: Slack Summary + Git MD Report
 > **目錄結構**: `{project}/{env-code}/{YYYY}/{YYMMDD}-{check-type}.md`
-> **當前實現版本**: pigo-health-monitor v10 (v11 規劃中)
+> **當前實現版本**: pigo-health-monitor v19
 
 ---
 
@@ -2168,6 +2175,7 @@ kubectl patch cronjob k8s-health-check -n monitoring \
 
 | 版本 | 日期 | 變更內容 |
 |------|------|----------|
+| v19 | 2025-12-30 | **Runner/Batch Throttling Rule**: Runner/Batch 類型 (runner, gitlab-runner, jenkins, ci-, cd-, build-, executor, cron, job, batch) Throttling > 20% 優先調高 limit，不看 P95 |
 | v11 | 2025-12-29 | **Prometheus Integration**: 整合 Prometheus 趨勢資料 (10m avg / 30m P95 / throttling)，完整實現 Anti-False-Positive Decision Tree |
 | v10 | 2025-12-29 | **Anti-False-Positive Edition**: 完整 Decision Tree、趨勢/行為證據必填、🚨 條件組 A/B/C、🟡 尖峰觀測區、**方案 B 保守時間參數 (10m avg / 30m P95)** |
 | v9 | 2025-12-29 | Slack 摘要加入各項目狀態 emoji，錯誤日誌改為 24h |

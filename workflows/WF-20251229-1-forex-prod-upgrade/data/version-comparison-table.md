@@ -7,6 +7,8 @@
 | dwh-service-rel | 84 | 85 | ✓ |
 | exchange-service-rel | 239 | 240 | ✓ |
 | user-service-rel | 148 | 150 | ✓ |
+| exchange-out-service-rel | 10 | 11 | ✓ |
+| kyc-service-rel |  | 1 | ✓ |
 
 ## Frontend Services
 
@@ -16,4 +18,4 @@
 
 ---
 
-**Generated at:** 2025-12-29 17:10:30
+**Generated at:** 2025-12-29 21:02:41

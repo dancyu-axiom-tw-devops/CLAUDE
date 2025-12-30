@@ -1,40 +1,31 @@
 # Forex Production Upgrade Workflow
 
 ---
-**狀態**: 已完成
-**建立日期**: 2025-12-23
-**最後更新**: 2025-12-23
+**狀態**: 進行中
+**建立日期**: 2025-12-29
+**最後更新**: 2025-12-29
 **參考**: [AGENTS.md](~/CLAUDE/AGENTS.md)
 
 ---
 
 ## 📋 本次升級內容
 
-### Backend Services (11)
-- notice-service-rel: 68 → 71
-- powercard-setting-service-rel: 27 → 28
-- user-service-rel: 142 → 148
-- powercard-service-rel: 111 → 116
-- expose-api-service-rel: (新服務) → 2
-- dwh-service-rel: 80 → 84
-- web3j-address-service-rel: 9 → 12
-- balance-service-rel: 61 → 63
-- exchange-out-service-rel: (新服務) → 6
-- setting-service-rel: 212 → 219
-- exchange-service-rel: 231 → 239
+### Backend Services (5)
+- dwh-service-rel: 84 → 85
+- exchange-service-rel: 239 → 240
+- user-service-rel: 148 → 150
+- exchange-out-service-rel: 10 → 11
+- kyc-service-rel: (新服務) → 1
 
-### Frontend Services (4)
-- forex-web-rel: 201 → 204
-- uu-h5-rel: 386 → 407
-- powercard-admin-front-rel: 74 → 76
-- forex-admin-front-rel: 262 → 268
+### Frontend Services (1)
+- forex-admin-front-rel: 268 → 270
 
 ---
 
 ## 🗂️ 目錄結構
 
 ```
-WF-20251223-2-forex-prod-upgrade/
+WF-20251229-1-forex-prod-upgrade/
 ├── README.md                          # 本文件
 ├── TEMPLATE-USAGE.md                  # 範本使用說明
 ├── script/
@@ -64,7 +55,7 @@ WF-20251223-2-forex-prod-upgrade/
 
 2. **切換到工作目錄**：
    ```bash
-   cd /Users/user/CLAUDE/workflows/WF-20251223-2-forex-prod-upgrade
+   cd /Users/user/CLAUDE/workflows/WF-20251229-1-forex-prod-upgrade
    ```
 
 3. **確保 gcloud 使用正確帳號**：
@@ -225,8 +216,8 @@ asia-east2-docker.pkg.dev/uu-prod/uu-prod/forex/user-service/user-service-rel:14
 2. **GCloud 帳號**：確保使用有權限的帳號（`dancyu@star-link.tech`）
 
 3. **新服務處理**：
-   - `expose-api-service-rel` 和 `exchange-out-service-rel` 是新服務
-   - 當前版本記錄中沒有這兩個服務
+   - `kyc-service-rel` 是新服務
+   - 當前版本記錄中沒有這個服務
    - GCR 清理會自動跳過新服務
 
 4. **GCR 清理策略**：
@@ -258,5 +249,5 @@ asia-east2-docker.pkg.dev/uu-prod/uu-prod/forex/user-service/user-service-rel:14
 ---
 
 **範本版本**: 1.0
-**建立日期**: 2025-12-23
+**建立日期**: 2025-12-29
 **適用於**: Forex 生產環境升級

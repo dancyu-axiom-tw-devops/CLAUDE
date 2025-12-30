@@ -28,8 +28,8 @@
 ## JuanCash Cluster
 | 環境 | 時間 | Namespace |
 |------|------|-----------|
-| juancash-prod | 08:55 | juancash-prod |
-| juancash-dev | 09:00 | juancash-dev |
+| juancash-prod | 08:55 | jc-prod |
+| juancash-dev | 09:00 | jc-dev |
 
 ---
 

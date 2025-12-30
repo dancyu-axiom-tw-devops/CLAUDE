@@ -1,6 +1,6 @@
 Current Production Image Versions
 =================================
-Recorded at: 2025-12-29 17:10:18
+Recorded at: 2025-12-29 21:02:20
 
 balance-service-rel: 63
 captcha-service-rel: 16
