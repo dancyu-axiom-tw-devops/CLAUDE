@@ -3,14 +3,34 @@ ref: [AGENTS.md](~/CLAUDE/AGENTS.md)
 ref: [k8s-service-monitor.md](~/CLAUDE/docs/k8s-service-monitor.md)
 status: 已完成
 created: 2025-12-25
-updated: 2025-12-25
+updated: 2025-12-30
 ---
 
 # Waas2 Tenant 服務健康監控系統
 
 基於 k8s-service-monitor.md 規範實作的 Waas2 Tenant 服務每日健康檢查系統。
 
-## 功能特性
+## 重大更新 (2025-12-30)
+
+此 workflow 的實作已遷移至統一的健康監控系統：
+
+| 環境 | 新位置 | 排程時間 |
+|------|--------|---------|
+| waas2-prod | `waas2-tenant-k8s-deploy/monitor/monitor-cronjob/` | 08:20 |
+| waas2-sensitive-prod | `waas2-tenant-sensitive-k8s-deploy/monitor/monitor-cronjob/` | 08:21 |
+
+**統一鏡像**: `asia-east2-docker.pkg.dev/uu-prod/waas-prod/waas-health-monitor:v21`
+
+**新功能**:
+- GitHub 報告自動上傳
+- Prometheus (ARMS) 整合
+- Slack 通知
+
+舊的 `infra/health-monitor` 目錄已停用並清理。
+
+---
+
+## 功能特性 (原始版本)
 
 - ✅ 每日自動執行（09:00 UTC+8）
 - ✅ 8 項巡檢規則（按照 k8s-service-monitor.md）
@@ -20,7 +40,7 @@ updated: 2025-12-25
 
 ## 監控範圍
 
-**命名空間**: `waas2-prod`
+**命名空間**: `waas2-prod`, `waas2-sensitive-prod`
 
 **服務清單** (11 個):
 - service-admin
