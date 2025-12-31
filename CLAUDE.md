@@ -25,6 +25,12 @@
 ~/CLAUDE/
 ├── AGENTS.md                    # 本文件 - AI 協作規範
 ├── README.md                    # 文檔目錄說明
+├── credentials/                 # 存放密鑰
+├── profiles/                    # 專案腳本與服務資訊
+│   ├── forex.md                 # forex 專案
+│   ├── jc.md                    # jc 專案
+│   ├── pigo.md                  # pigo 專案
+│   └── waas.md                  # waas 專案
 ├── workflows/                   # 可重複使用的 SOP 或獨立工作
 │   └── WF-YYYYMMDD-n-description/ # 以日期+英文簡述命名,同一天有多個任務時,n 為1~9
 │       ├── *.md                 # 計劃、文件
@@ -72,6 +78,8 @@ updated: YYYY-MM-DD
 - /Users/user/Waas2-project/gitlab.axiom-infra.com/waas2-tenant-k8s-deploy
 - /Users/user/Waas2-project/gitlab.axiom-infra.com/waas2-tenant-nacos-deploy
 - /Users/user/Waas2-project/gitlab.axiom-infra.com/waas2-tenant-sensitive-k8s-deploy
+
+# 專案資訊
 
 ## 權限規範
 
