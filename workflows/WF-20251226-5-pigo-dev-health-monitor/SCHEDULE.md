@@ -23,13 +23,13 @@
 | forex-prod | 08:35 | forex-prod |
 | forex-rel | 08:40 | forex-rel |
 | forex-stage | 08:45 | forex-stage |
-| forex-dev | 08:50 | forex-dev |
 
-## JuanCash Cluster
+## JuanCash Cluster (tp-jc)
 | 環境 | 時間 | Namespace |
 |------|------|-----------|
 | juancash-prod | 08:55 | jc-prod |
 | juancash-dev | 09:00 | jc-dev |
+| psp-prod | 09:05 | psp-prod |
 
 ---
 
@@ -56,6 +56,7 @@ forex-dev:   schedule: "50 8 * * *"  timeZone: "Asia/Taipei"
 # JuanCash
 juancash-prod: schedule: "55 8 * * *"  timeZone: "Asia/Taipei"
 juancash-dev:  schedule: "0 9 * * *"   timeZone: "Asia/Taipei"
+psp-prod:      schedule: "5 9 * * *"   timeZone: "Asia/Taipei"
 ```
 
 ## Notes
