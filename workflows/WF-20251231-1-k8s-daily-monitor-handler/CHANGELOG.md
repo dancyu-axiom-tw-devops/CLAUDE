@@ -50,13 +50,36 @@
 - 錯誤: 404 Not Found (掃描攻擊)
 - 結論: 正常安全行為，無需處理
 
+### PIGO-PROD: Runner CPU Throttling 修復
+
+**問題**: pigo-prod-k8s-service-runner throttling 27.5% (> 20% 閾值)
+
+**修正**:
+| 項目 | 舊值 | 新值 |
+|------|------|------|
+| CPU Limit | 500m | 1000m |
+
+**修改文件**:
+- `/Users/user/K8S/k8s-devops/helm/gitlab-runner/pigo-prod-k8s-service-runner/values.yaml`
+
+**部署**: `helm upgrade -n pigo-prod pigo-prod-k8s-service-runner gitlab/gitlab-runner -f values.yaml --set runnerToken="<token>"`
+
+### Profile 更新
+
+為各專案 Profile 添加 GitLab Runner 腳本路徑：
+- `/Users/user/CLAUDE/profiles/pigo.md`
+- `/Users/user/CLAUDE/profiles/forex.md`
+- `/Users/user/CLAUDE/profiles/waas.md`
+- `/Users/user/CLAUDE/profiles/jc.md`
+
+新增內容：`**GitLab Runner 腳本**: /Users/user/K8S/k8s-devops/helm/gitlab-runner`
+
 ### 待處理 (未執行)
 
 | 環境 | 問題 | 說明 |
 |------|------|------|
 | forex-prod | jcard-service throttling 13.9% | < 20% Runner 閾值 |
 | forex-prod | runner throttling 16.1% | < 20% Runner 閾值 |
-| pigo-prod | runner throttling 27.5% | > 20%，建議處理 |
 | waas2-prod | runner throttling 11.9% | < 20% Runner 閾值 |
 
 ---

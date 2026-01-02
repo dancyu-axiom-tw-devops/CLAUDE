@@ -47,6 +47,7 @@
 ## 集群管理者腳本 (k8s-devops)
 
 **路徑**: `/Users/user/K8S/k8s-devops`
+**GitLab Runner 腳本**: `/Users/user/K8S/k8s-devops/helm/gitlab-runner`
 
 ### GitLab Runner 配置
 
