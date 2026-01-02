@@ -62,3 +62,11 @@
 ./helm/gitlab-runner/gitlab-runner.sh upgrade <runner-name>   # 升級 runner
 ```
 
+## Health Monitor CronJob
+
+| 環境 | 腳本路徑 | 部署指令 |
+|------|---------|---------|
+| prod (jc) | github/juancash-prod-k8s-infra-deploy/monitor/monitor-cronjob | `kubectl --context tp-jc-prod-k8s apply -k <path>` |
+| prod (psp) | gitlab.axiom-infra.com/psp-prod-k8s-deploy/monitor/monitor-cronjob | `kubectl --context tp-jc-prod-k8s apply -k <path>` |
+
+版本管理: `kustomization.yml` 中的 `images.newTag`

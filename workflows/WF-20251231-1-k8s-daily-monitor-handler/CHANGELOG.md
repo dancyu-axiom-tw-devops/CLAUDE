@@ -2,6 +2,71 @@
 
 ## 2026-01-02
 
+### WAAS2-PROD: ilogtail exec format error 修復
+
+**問題**: `ilogtail-ds` pod 持續 CrashLoopBackOff，錯誤訊息 `exec format error`
+
+**根因**: GCP registry 中的 `ilogtail:2.0.7` 是 **arm64** 架構，但 K8s 節點是 **amd64**
+
+**解決方案**:
+1. 從阿里雲官方 registry pull amd64 版本
+2. 推送到 GCP registry 並標記為 `2.0.7-amd64`
+3. 更新 kustomization.yml 使用正確的 tag
+
+**修改文件**:
+- `/Users/user/Waas2-project/gitlab.axiom-infra.com/waas2-tenant-k8s-deploy/waas2-log-sls/kustomization.yml`
+  - `newTag: '2.0.7'` → `newTag: '2.0.7-amd64'`
+
+**部署**: ✅ ilogtail-ds 已恢復 Running
+
+---
+
+### Health Monitor v25: Pod 狀態與 Runner Throttling 修正
+
+**問題 1**: Slack 通知顯示 `Pods: 🚨 4/6 Running (2 個未 Running)`，但 2 個 pods 是已完成的 Job pods (Completed 狀態)
+
+**問題 2**: `prod-waas2-tenant-runner-gitlab-runner` Runner throttling 11.9% 被誤報為 Critical，但 Runner 類型應該使用 20% 閾值
+
+**解決方案**:
+1. 排除 Completed/Succeeded 狀態的 Job pods，不計入「未 Running」的警示
+2. 修正 Runner/Batch 類型的 throttling 判斷邏輯，throttling <= 20% 時完全不報警
+
+**修改文件**:
+- `/Users/user/MONITOR/k8s-health-monitor/src/health-check-full.py`
+  - `check_pod_health()`: 新增 `total_completed` 計數，Succeeded/Completed pods 標記為 healthy
+  - Slack 通知: 使用 `active_total = total - completed` 計算應該 Running 的 pods 數量
+  - Runner throttling: 重構條件邏輯，`if is_runner:` 優先判斷，throttling <= 20% 完全不觸發警告
+- `/Users/user/MONITOR/k8s-health-monitor/VERSION` - v24 → v25
+
+**部署**: ✅ v25 鏡像已推送到所有 registries
+
+**Slack 顯示邏輯**:
+- 有 Completed pods: `✅ 4/4 Running (+2 Completed)`
+- 有問題 pods + Completed pods: `🚨 3/4 Running (1 個未 Running) +2 Completed`
+
+---
+
+### Health Monitor v24: Skip TLS Check 功能
+
+**問題**: waas2-sensitive-prod 報告顯示「無 TLS 憑證」警告，但這是內部 namespace 的預期行為
+
+**解決方案**: 新增 `SKIP_TLS_CHECK` 環境變數，讓各 CronJob 可自行配置是否跳過 TLS 檢查
+
+**修改文件**:
+- `/Users/user/MONITOR/k8s-health-monitor/src/health-check-full.py` - 支援 SKIP_TLS_CHECK 環境變數
+- `/Users/user/MONITOR/k8s-health-monitor/src/report_generator.py` - 顯示「N/A (內部 namespace，已跳過檢查)」
+- `/Users/user/MONITOR/k8s-health-monitor/VERSION` - v23 → v24
+- `/Users/user/MONITOR/k8s-health-monitor/build-and-push.sh` - 新增 WAAS GCP registry
+
+**部署**:
+- ✅ v24 鏡像已推送到所有 registries
+- ✅ waas2-sensitive-prod CronJob: 添加 `SKIP_TLS_CHECK=true`，更新鏡像到 v24
+- ✅ waas2-prod CronJob: 更新鏡像到 v24
+
+**使用方式**: 在 CronJob 的 env 中添加 `SKIP_TLS_CHECK=true` 即可跳過 TLS 檢查
+
+---
+
 ### JC-PROD: registercenter OOMKill 修復
 
 **問題**: registercenter-0 OOMKill (exit code 137)
@@ -75,6 +140,25 @@
 - `/Users/user/CLAUDE/profiles/jc.md`
 
 新增內容：`**GitLab Runner 腳本**: /Users/user/K8S/k8s-devops/helm/gitlab-runner`
+
+### PIGO-DEV: Pod 失敗調查
+
+**用戶報告**: agent-system, game-api (3 pods) Failed
+
+**調查結果**:
+| Pod | 目前狀態 | 重啟時間 | 節點 |
+|-----|---------|---------|------|
+| agent-system-9c6b5446-jrkd5 | ✅ Running | 2026-01-01 16:02 | node05 |
+| game-api-7dc7647dc6-stv59 | ✅ Running | 2026-01-01 16:02 | node02 |
+| pigo-cron-77cc9c4d8c-jgn2x | ✅ Running | 2026-01-01 16:02 | node04 |
+
+**分析**:
+- 三個 pod 在不同節點上同時重啟 (11h ago)
+- 節點狀態正常，無 MemoryPressure/DiskPressure
+- K8s events 已過期無法追溯
+- 用戶報告的 pod 名稱與目前運行的不同 (舊 pod 已被替換)
+
+**結論**: Pod 已自動恢復，無需處理。可能是 deployment 更新或臨時性問題。
 
 ### 待處理 (未執行)
 

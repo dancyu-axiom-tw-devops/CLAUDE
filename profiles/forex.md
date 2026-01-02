@@ -65,3 +65,13 @@
 ./helm/gitlab-runner/gitlab-runner.sh list                    # 列出所有 runner
 ./helm/gitlab-runner/gitlab-runner.sh upgrade <runner-name>   # 升級 runner
 ```
+
+## Health Monitor CronJob
+
+| 環境 | 腳本路徑 | 部署指令 |
+|------|---------|---------|
+| stg | hkidc-k8s-gitlab/forex-stg/forex-stage-k8s-deploy/monitor/monitor-cronjob | `kubectl --context tp-hkidc-k8s apply -k <path>` |
+| rel | hkidc-k8s-gitlab/forex-rel/forex-rel-k8s-deploy/monitor/monitor-cronjob | `kubectl --context tp-hkidc-k8s apply -k <path>` |
+| prod | gitlab.axiom-infra.com/forex-prod-k8s-infra-deploy/monitor/monitor-cronjob | `kubectl --context tp-forex-prod-k8s apply -k <path>` |
+
+版本管理: `kustomization.yml` 中的 `images.newTag`

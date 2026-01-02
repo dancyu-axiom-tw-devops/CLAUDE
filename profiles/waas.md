@@ -43,6 +43,12 @@ service-admin, service-api, service-gateway, service-user, service-eth, service-
 
 **輔助**: nginx, kafka-ui, monitor, upload, mysql-client
 
+## 版本管理
+
+各服務的鏡像版本統一在該服務目錄下的 `kustomization.yml` 中管理。
+
+範例: `waas2-log-sls/kustomization.yml` 中的 `images.newTag` 欄位
+
 ## 集群管理者腳本 (k8s-devops)
 
 **路徑**: `/Users/user/K8S/k8s-devops`
@@ -67,3 +73,15 @@ service-admin, service-api, service-gateway, service-user, service-eth, service-
 ./helm/gitlab-runner/gitlab-runner.sh list                    # 列出所有 runner
 ./helm/gitlab-runner/gitlab-runner.sh upgrade <runner-name>   # 升級 runner
 ```
+
+## Health Monitor CronJob
+
+| 環境 | 腳本路徑 | 部署指令 |
+|------|---------|---------|
+| dev | hkidc-k8s-gitlab/waas2-dev-k8s-deploy/monitor/monitor-cronjob | `kubectl --context tp-hkidc-k8s apply -k <path>` |
+| rel | hkidc-k8s-gitlab/waas2-rel-k8s-deploy/monitor/monitor-cronjob | `kubectl --context tp-hkidc-k8s apply -k <path>` |
+| sensitive-rel | hkidc-k8s-gitlab/waas2-k8s-sensitive-rel-deploy/monitor/monitor-cronjob | `kubectl --context tp-hkidc-k8s apply -k <path>` |
+| prod | gitlab.axiom-infra.com/waas2-tenant-k8s-deploy/monitor/monitor-cronjob | `kubectl --context tp-prod-waas2-tenant apply -k <path>` |
+| prod-sensitive | gitlab.axiom-infra.com/waas2-tenant-sensitive-k8s-deploy/monitor/monitor-cronjob | `kubectl --context tp-prod-waas2-tenant apply -k <path>` |
+
+版本管理: `kustomization.yml` 中的 `images.newTag`

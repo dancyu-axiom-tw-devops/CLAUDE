@@ -65,6 +65,17 @@
 ./helm/gitlab-runner/gitlab-runner.sh upgrade <runner-name>   # 升級 runner
 ```
 
+## Health Monitor CronJob
+
+| 環境 | 腳本路徑 | 部署指令 |
+|------|---------|---------|
+| dev | hkidc-k8s-gitlab/pigo-dev-k8s-deploy/monitor/monitor-cronjob | `kubectl --context tp-hkidc-k8s apply -k <path>` |
+| stg | hkidc-k8s-gitlab/pigo-stage-k8s-deploy/monitor/monitor-cronjob | `kubectl --context tp-hkidc-k8s apply -k <path>` |
+| rel | hkidc-k8s-gitlab/pigo-rel-k8s-deploy/monitor/monitor-cronjob | `kubectl --context tp-hkidc-k8s apply -k <path>` |
+| prod | gitlab.axiom-infra.com/pigo-prod-k8s-infra-deploy/monitor/monitor-cronjob | `kubectl --context tp-pigo-prod-k8s apply -k <path>` |
+
+版本管理: `kustomization.yml` 中的 `images.newTag`
+
 ## 常用指令
 
 ```bash
