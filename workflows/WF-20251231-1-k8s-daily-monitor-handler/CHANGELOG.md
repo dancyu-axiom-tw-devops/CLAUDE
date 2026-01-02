@@ -41,9 +41,11 @@
 ### Error Logs 分析
 
 **JC-PROD** (12,758 errors/24h):
-- 來源: APM Server
+- 來源: APM Server 8.9.0 (ECK Operator 部署)
 - 錯誤: `precondition 'apm integration installed' failed`
-- 結論: APM 配置問題，非核心服務，低優先級
+- 根因: Elasticsearch 缺少 APM integration index templates (`metrics-apm.service_summary.60m`, `traces-apm`)
+- 解法選項: (1) 部署 Kibana 透過 Fleet 安裝 integration (2) 手動透過 ES API 安裝 templates (3) Scale down APM
+- 結論: APM 功能仍需使用，暫不處理，待後續評估是否部署 Kibana
 
 **FOREX-PROD** (523 errors/24h):
 - 來源: forex-nginx
