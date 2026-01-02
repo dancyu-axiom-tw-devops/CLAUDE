@@ -1,8 +1,8 @@
 ---
 ref: [AGENTS.md](~/CLAUDE/AGENTS.md)
-status: 進行中
+status: 已完成
 created: 2025-12-31
-updated: 2025-12-31
+updated: 2026-01-02
 ---
 
 # K8s Daily Monitor 處理流程
@@ -18,6 +18,7 @@ updated: 2025-12-31
 ```
 ~/CLAUDE/profiles/
 ├── pigo.md      # PIGO 專案配置（環境、資源限制、部署路徑）
+├── js.md      # JUANCASH 專案配置 & PSP 專案配置
 ├── waas.md      # WAAS 專案配置
 └── forex.md     # FOREX 專案配置
 ```

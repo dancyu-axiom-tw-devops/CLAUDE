@@ -31,6 +31,7 @@
 ### PROD
 - Namespace: pigo-prod
 - K8s 腳本: /Users/user/PIGO-project/gitlab.axiom-infra.com/pigo-prod-k8s-deploy
+- infra 腳本: /Users/user/PIGO-project/gitlab.axiom-infra.com/pigo-prod-k8s-infra-deploy
 - 使用 git-tp 取代 git 指令
 
 ## 微服務列表
