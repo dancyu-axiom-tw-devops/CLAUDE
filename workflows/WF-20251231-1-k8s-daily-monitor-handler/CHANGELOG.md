@@ -1,5 +1,66 @@
 # K8s Daily Monitor Handler - CHANGELOG
 
+## 2026-01-02
+
+### JC-PROD: registercenter OOMKill 修復
+
+**問題**: registercenter-0 OOMKill (exit code 137)
+
+**根因分析**:
+- JVM Heap: `-Xms1024m -Xmx1024m` (1024MB)
+- Container Memory Limit: 1280Mi
+- 非 Heap 可用空間: 僅 256Mi (不足以容納 Metaspace、Native Memory 等)
+
+**修正**:
+| 項目 | 舊值 | 新值 |
+|------|------|------|
+| Memory Limit | 1280Mi | 1536Mi |
+| 非 Heap 可用空間 | 256Mi | 512Mi |
+
+**修改文件**:
+- `/Users/user/JUANCASH-project/github/juancash-prod-k8s-deploy/jc-refactor/app-service/registercenter/registercenter.yml`
+
+**部署**: 使用 kustomize 滾動更新 3 個 StatefulSet pods
+
+### FOREX-PROD: 移除無效 DNS 記錄
+
+**問題**: forex-ui 和 powercard 域名有 DNS 解析但無對應 nginx vhost，落入 default_server
+
+**分析**:
+| 域名 | 訪問次數 | DNS 狀態 | Nginx vhost |
+|------|---------|----------|-------------|
+| forex-ui.uuwallet.com | 20,593 | ✅ 有解析 | ❌ 無配置 |
+| powercard.uuwallet.com | 3,570 | ✅ 有解析 | ❌ 無配置 |
+
+**修正**: 註解這些 DNS 記錄
+
+**修改文件**:
+- `/Users/user/FOREX-project/hkidc-k8s-gitlab/dns-recored-uu-domain/record_list/uuwallet.com.yaml`
+- `/Users/user/FOREX-project/hkidc-k8s-gitlab/dns-recored-uu-domain/record_list/uuwallet.ph.yaml`
+
+### Error Logs 分析
+
+**JC-PROD** (12,758 errors/24h):
+- 來源: APM Server
+- 錯誤: `precondition 'apm integration installed' failed`
+- 結論: APM 配置問題，非核心服務，低優先級
+
+**FOREX-PROD** (523 errors/24h):
+- 來源: forex-nginx
+- 錯誤: 404 Not Found (掃描攻擊)
+- 結論: 正常安全行為，無需處理
+
+### 待處理 (未執行)
+
+| 環境 | 問題 | 說明 |
+|------|------|------|
+| forex-prod | jcard-service throttling 13.9% | < 20% Runner 閾值 |
+| forex-prod | runner throttling 16.1% | < 20% Runner 閾值 |
+| pigo-prod | runner throttling 27.5% | > 20%，建議處理 |
+| waas2-prod | runner throttling 11.9% | < 20% Runner 閾值 |
+
+---
+
 ## 2025-12-31
 
 ### CPU Throttling 問題處理

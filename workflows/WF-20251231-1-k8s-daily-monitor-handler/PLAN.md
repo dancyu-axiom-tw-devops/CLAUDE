@@ -1,15 +1,31 @@
 ---
 ref: [AGENTS.md](~/CLAUDE/AGENTS.md)
-status: 已完成
+type: template
+status: active
 created: 2025-12-31
 updated: 2026-01-02
 ---
 
-# K8s Daily Monitor 處理流程
+# K8s Daily Monitor 處理流程 (範本)
+
+## 使用方式
+
+每個工作日開始時，執行以下指令：
+```
+執行今天的 daily monitor 處理
+```
+
+或引用此範本：
+```
+@/Users/user/CLAUDE/workflows/WF-20251231-1-k8s-daily-monitor-handler/PLAN.md
+執行今天的 daily monitor 處理
+```
+
+Claude 會依據本範本自動執行健康檢查分析和問題處置。
 
 ## 目標
 
-自動化處理 k8s-daily-monitor 健康檢查結果，分析問題並執行必要的配置調整，最後更新 CHANGELOG.md
+自動化處理 k8s-daily-monitor 健康檢查結果，分析問題並執行必要的配置調整。
 
 ## 專案資訊參考
 
@@ -17,143 +33,108 @@ updated: 2026-01-02
 
 ```
 ~/CLAUDE/profiles/
-├── pigo.md      # PIGO 專案配置（環境、資源限制、部署路徑）
-├── js.md      # JUANCASH 專案配置 & PSP 專案配置
+├── pigo.md      # PIGO 專案配置
+├── jc.md        # JUANCASH 專案配置 & PSP 專案配置
 ├── waas.md      # WAAS 專案配置
 └── forex.md     # FOREX 專案配置
 ```
 
-各 profile 包含：
-- 環境清單（prod/rel/stg/dev）
-- K8s 部署路徑
-- Git 倉庫位置
+## 監控環境
 
-## 專案路徑
+| 專案 | 環境 | Namespace | 報告路徑 |
+|------|------|-----------|----------|
+| PIGO | prod | pigo-prod | pigo/pigo-prod/YYYY/ |
+| FOREX | prod | forex-prod | forex/forex-prod/YYYY/ |
+| WAAS | prod | waas2-prod | waas/waas2-prod/YYYY/ |
+| JC | prod | jc-prod | juancash/jc-prod/YYYY/ |
 
-```
-健康檢查報告: /Users/user/MONITOR/k8s-daily-monitor
-```
+報告檔名格式: `YYMMDD-k8s-health.md`
 
-## 任務分解
+## 執行流程
 
-| # | 任務 | 說明 |
-|---|------|------|
-| 1 | 同步數據 | git pull 取得最新健康檢查結果 |
-| 2 | 分析問題 | 解析報告，識別需處置的問題項目 |
-| 3 | 執行處置 | 依據 profiles 調整配置（資源、replicas 等） |
-| 4 | 記錄變更 | 更新 CHANGELOG.md，commit 變更 |
-
-## 處置決策流程
-
-```
-健康檢查報告
-    │
-    ▼
-┌─────────────────────────────────────────────────────────┐
-│ 問題類型判斷                                             │
-├─────────────────────────────────────────────────────────┤
-│ CPU Throttling > 20%     → 調高 CPU limit               │
-│ Memory 使用率 > 80%      → 調高 Memory limit            │
-│ Pod Restart > 3 次/天    → 檢查 liveness probe / 資源   │
-│ PVC 使用率 > 85%         → 告警 / 擴容建議              │
-│ Replica 不足             → 調整 replicas                │
-└─────────────────────────────────────────────────────────┘
-    │
-    ▼
-參考 ~/CLAUDE/profiles/{project}.md 取得：
-  - 該環境的資源配置基準
-  - 部署檔案路徑
-  - 調整上限值
-    │
-    ▼
-執行配置調整 → 記錄 CHANGELOG → git commit
+### 1. 同步數據
+```bash
+cd /Users/user/MONITOR/k8s-daily-monitor
+git pull
 ```
 
-## 執行方式
+### 2. 識別當日報告
+讀取各環境的當日健康檢查報告。
 
-由 Claude 依序執行：
+### 3. 分析問題
 
-1. **同步數據**
-   ```bash
-   cd /Users/user/MONITOR/k8s-daily-monitor
-   git pull
-   ```
+根據報告的「問題與警告摘要」章節，識別需處置項目：
 
-2. **分析報告**
-   - 讀取當天健康檢查 JSON/YAML
-   - 識別超過閾值的項目
-   - 列出需要處置的問題清單
+| 問題類型 | 閾值 | 處置方式 |
+|----------|------|----------|
+| OOMKill | 發生即處理 | 增加 memory limit |
+| CPU Throttling (一般) | ≥ 10% | 增加 CPU limit |
+| CPU Throttling (Runner) | > 20% | 增加 CPU limit |
+| Memory P95 | > 75% | 觀察 / 增加 limit |
+| Pod 重啟 | > 0 次 | 檢查原因 |
+| Error logs | > 50 (24h) | 分析來源 |
 
-3. **執行處置**
-   - 參考 `~/CLAUDE/profiles/{project}.md`
-   - 修改對應的 K8s 配置檔（values.yaml / kustomization.yaml）
-   - 例如：調整 CPU limit、Memory limit、replicas
+### 4. 執行處置
 
-4. **記錄變更**
-   - 更新專案的 CHANGELOG.md
-   - git commit 變更
-   - （如需要）git push
+**OOMKill 處置流程**:
+1. 檢查是 Java heap 還是 container 資源問題
+2. 若 Java: 檢查 `-Xmx` 設定 vs container limit
+3. 調整 memory limit，確保非 heap 空間 ≥ 512Mi
 
-## CHANGELOG 格式
+**CPU Throttling 處置流程**:
+1. 查看當前 CPU limit
+2. 調高 limit (一般增加 50-100%)
+3. 使用 kustomize 部署
 
-```markdown
-## 📆 YYYY/MM
+**Error Logs 分析流程**:
+1. 查看錯誤樣本來源
+2. 判斷是應用錯誤還是外部攻擊
+3. 決定處置優先級
 
-* YYYY/MM/DD
-  * **🔧 資源配置調整**
-    * fix: `path/to/values.yaml`, 調整 Pod 資源配置
-      * 📈 **CPU Limit**: 200m → 500m
-      * 🎯 **解決問題**: CPU throttling 47.6%
-      * 📊 **判斷依據**: k8s-health-monitor 報告
+### 5. 記錄變更
+
+更新 `CHANGELOG.md`：
+- 記錄問題描述
+- 記錄根因分析
+- 記錄修改內容
+- 記錄部署結果
+
+## 判斷標準 (v21 Anti-False-Positive)
+
+| 狀態 | 符號 | 條件 | 行動 |
+|------|------|------|------|
+| 🟢 正常 | OK | 無異常指標 | 無需處理 |
+| 🟡 Spike | SPIKE | Snapshot hit limit，無趨勢佐證 | DevOps 參考 |
+| 🟠 Sustained | WATCH | 趨勢指標偏高，無行為異常 | 持續監控 |
+| 🚨 Critical | CRITICAL | 符合條件組 A/B/C | 需立即處理 |
+
+**原則**: 沒有趨勢證據，不得升級為 🚨
+
+## 常用指令
+
+```bash
+# 查看 pod 資源
+kubectl -n <namespace> get pod <pod> -o jsonpath='{.spec.containers[0].resources}' | jq
+
+# 使用 kustomize 部署
+cd <service-path>
+kustomize build . | kubectl apply -f -
+
+# 查看滾動更新狀態
+kubectl -n <namespace> rollout status deployment/<name>
+kubectl -n <namespace> rollout status statefulset/<name>
+
+# 查看 nginx access log 分析
+kubectl -n <namespace> exec <pod> -- cat /var/log/nginx/<log>.access.log | jq -r '.http_host' | sort | uniq -c | sort -rn
 ```
 
 ## 注意事項
 
-1. **Git 規範**: 對特定目錄使用 `git-tp` 而非 `git`（參考 CLAUDE.md）
-2. **Credentials**: 不要將敏感資訊寫入 git
-3. **確認環境**: 處置前確認目標環境（prod 需更謹慎）
-4. **備份**: 修改前記錄原始值
+1. **Git 規範**: 特定目錄使用 `git-tp` 而非 `git`
+2. **確認環境**: 處置前確認目標環境（prod 需更謹慎）
+3. **備份**: 修改前記錄原始值
+4. **kustomize**: 使用 kustomize build 而非直接 apply yaml
 
-## 預期產出
+## 執行歷史
 
-- `summary/YYYY-MM-DD.md` - 當日健康檢查摘要
-- `CHANGELOG.md` - 更新變更日誌
-
----
-
-## 任務一：同步數據
-
-**目標**: 從 Git 拉取最新的健康檢查結果
-
-**步驟**:
-1. 切換至專案目錄
-2. 執行 `git pull`
-3. 記錄同步結果
-
----
-
-## 任務二：識別新報告
-
-**目標**: 找出當天新增或修改的報告檔案
-
-**步驟**:
-1. 檢查 `reports/` 目錄
-2. 根據檔名或修改時間篩選當天報告
-3. 輸出待處理檔案清單
-
----
-
-## 任務三：分析處理
-
-**目標**: 解析健康檢查報告，統計各環境狀態
-
-**步驟**:
-1. 讀取各報告檔案
-2. 統計健康/警告/異常數量
-3. 產生 `summary/YYYY-MM-DD.md` 摘要
-
----
-
-## 任務四：更新 CHANGELOG
-
-**目標**: 依 CLAUDE.md 規範更新 CHANGELOG.md
+詳見 [CHANGELOG.md](./CHANGELOG.md)
