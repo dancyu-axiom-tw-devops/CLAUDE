@@ -50,6 +50,9 @@ service-admin, service-api, service-gateway, service-user, service-eth, service-
 
 ### GitLab Runner 配置
 
+> **Commit 規範**: k8s-devops 使用標準類型前綴並標註路徑
+> 範例: `perf: helm/gitlab-runner/waas-dev-k8s-service-runner01 CPU limit 調整`
+
 | Runner 名稱 | 配置路徑 |
 |------------|---------|
 | waas-dev-k8s-service-runner01 | helm/gitlab-runner/waas-dev-k8s-service-runner01/values.yaml |

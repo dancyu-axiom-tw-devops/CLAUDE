@@ -51,6 +51,9 @@
 
 ### GitLab Runner 配置
 
+> **Commit 規範**: k8s-devops 使用標準類型前綴並標註路徑
+> 範例: `perf: helm/gitlab-runner/forex-prod-k8s-runner CPU limit 調整`
+
 | Runner 名稱 | 配置路徑 |
 |------------|---------|
 | forex-prod-k8s-runner | helm/gitlab-runner/forex-prod-k8s-runner/values.yaml |

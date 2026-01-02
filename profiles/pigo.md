@@ -47,6 +47,9 @@
 
 ### GitLab Runner 配置
 
+> **Commit 規範**: k8s-devops 使用標準類型前綴並標註路徑
+> 範例: `perf: helm/gitlab-runner/pigo-prod-k8s-service-runner CPU limit 500m → 1000m`
+
 | Runner 名稱 | 配置路徑 |
 |------------|---------|
 | pigo-prod-k8s-service-runner | helm/gitlab-runner/pigo-prod-k8s-service-runner/values.yaml |
